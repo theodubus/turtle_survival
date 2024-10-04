@@ -3,6 +3,7 @@ import { ctx, getHeight, getWidth } from './canvas.js';
 import { player, invinciblePlayer } from './player.js';
 import { world } from './world.js';
 import { getGameRunning, startGame, restartGame, setStartTime } from './game.js';
+import { gameDifficulty } from "./game.js";
 
 // Tableau pour stocker les ennemis
 let enemies = [];
@@ -28,7 +29,8 @@ const enemySpawnRadius = {
 let enemyTimeouts = [];
 
 // Fonction pour générer une vague d'ennemis, 10 par defaut, sinon n (parametre)
-export function waveEnemy(n = 40) {
+export function waveEnemy(maxN = 100) {
+    let n = Math.ceil(maxN * gameDifficulty());
     for (let i = 0; i < n; i++) {
     // wait 1 second before spawning the next enemy
     const timeoutId = setTimeout(spawnEnemy, i * 100);
@@ -58,7 +60,7 @@ export function spawnEnemy() {
     const enemyY = player.y + world.y + Math.sin(angle) * distance;
 
     const playerSpeed = player.speed;  // Vitesse du joueur
-    let speedEnemy = Math.max(0.3 * playerSpeed, Math.min(0.7 * playerSpeed, generateNormalRandom(0.4 * playerSpeed, 0.2 * playerSpeed)));  // Vitesse de déplacement
+    let speedEnemy = Math.max(0.3 * playerSpeed, Math.min(0.8 * playerSpeed, generateNormalRandom(0.5 * playerSpeed, 0.2 * playerSpeed)));  // Vitesse de déplacement
 
     enemies.push({
         x: enemyX,
@@ -68,7 +70,7 @@ export function spawnEnemy() {
         color: "red",  // Couleur des ennemis
         // vitesse de deplacement suit une loi normale de moyenne 1.5 et d'écart type 0.5, avec un minimum de 0.5 et un maximum de 2.5
         speed: speedEnemy, // Vitesse de déplacement
-        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.5), // Distance maximale avant que l'ennemi ne disparaisse
+        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.25), // Distance maximale avant que l'ennemi ne disparaisse
         damage: 1,  // Dégâts infligés au joueur
         animationSpeed: 90,  // Vitesse de l'animation
         currentImage: 1,  // Image actuelle de l'ennemi
@@ -152,9 +154,11 @@ export function updateEnemies() {
         }
 
         if (distance > 0) {
+            let speedEnemy = enemy.speed * (gameDifficulty() + 1) / 2;
+
             // Normalisation du vecteur directionnel
-            const moveX = (dx / distance) * enemy.speed;
-            const moveY = (dy / distance) * enemy.speed;
+            const moveX = (dx / distance) * speedEnemy;
+            const moveY = (dy / distance) * speedEnemy;
 
             // Mise à jour de la position de l'ennemi
             enemy.x += moveX;

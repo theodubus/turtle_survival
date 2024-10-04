@@ -1,7 +1,6 @@
 import { player } from './player.js';
 import { updateWorldPosition } from './world.js';
-import { getDirection } from './joystick.js';
-import { randomBool } from "./utils.js";
+import { getDirection, getAngle } from './joystick.js';
 
 // Gestion des touches enfoncées
 let keysPressed = {};
@@ -15,39 +14,11 @@ export function updateMovement() {
     let dx = 0;
     let dy = 0;
 
-    const direction = getDirection();
+    const angle = getAngle();
 
-    if (direction) {
-        switch (direction) {
-            case 'd':
-                dx -= player.speed;
-                break;
-            case 'hd':
-                dx -= player.speed;
-                dy += player.speed;
-                break;
-            case 'h':
-                dy += player.speed;
-                break;
-            case 'hg':
-                dx += player.speed;
-                dy += player.speed;
-                break;
-            case 'g':
-                dx += player.speed;
-                break;
-            case 'bg':
-                dx += player.speed;
-                dy -= player.speed;
-                break;
-            case 'b':
-                dy -= player.speed;
-                break;
-            case 'bd':
-                dx -= player.speed;
-                dy -= player.speed;
-                break;
-        }
+    if (angle) {
+        dx = -Math.cos(angle) * player.speed;
+        dy = Math.sin(angle) * player.speed;
     }
     else {
         if (keysPressed['ArrowRight'] || keysPressed['d']) {
@@ -62,13 +33,13 @@ export function updateMovement() {
         if (keysPressed['ArrowDown'] || keysPressed['s']) {
             dy -= player.speed;
         }
-    }
-    
-    if (dx != 0 && dy != 0) {
-        // on normalise pour que le deplacement total soit la vitesse du joueur
-        const norm = Math.sqrt(dx * dx + dy * dy);
-        dx = dx / norm * player.speed;
-        dy = dy / norm * player.speed;
+        
+        if (dx != 0 && dy != 0) {
+            // on normalise pour que le deplacement total soit la vitesse du joueur
+            const norm = Math.sqrt(dx * dx + dy * dy);
+            dx = dx / norm * player.speed;
+            dy = dy / norm * player.speed;
+        }
     }
 
     updateWorldPosition(dx, dy);

@@ -8,6 +8,13 @@ import { renderJoystick } from './joystick.js';
 export let elapsedTime = 0;       // Temps écoulé en secondes
 export let startTime = null;      // Pour stocker l'heure du début
 export let gameRunning = false;   // Indique si le jeu est en cours
+export let difficultyIncreaseRate = 0.015;  // Taux d'augmentation de la difficulté
+export let initialDifficulty = 0.25;  // Difficulté initiale
+
+export function gameDifficulty() {
+    let b = Math.log(1/initialDifficulty - 1);
+    return 1 / (1 + Math.exp(-difficultyIncreaseRate * elapsedTime + b));
+}
 
 export function setStartTime() {
     startTime = Date.now();

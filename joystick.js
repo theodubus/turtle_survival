@@ -1,4 +1,5 @@
 import { ctx, canvas } from './canvas.js';
+import { gameDifficulty } from "./game.js";
 
 const pi = Math.PI;
 
@@ -33,7 +34,11 @@ export function getDirection() {
     } else if (radianAngle > -3 * Math.PI / 8 && radianAngle <= -Math.PI / 8) {
         return 'bd';
     }
+}
 
+export function getAngle() {
+    if (angle === undefined) return undefined
+    return -angle;
 }
 
 function touchStart(x, y) {
@@ -113,9 +118,11 @@ export function renderJoystick() {
     //     200
     // );
 
+    ctx.fillText(`Game difficulty: ${gameDifficulty()}`, 200, 200);
+
     // ctx.fillText(`Raw angle: ${Math.round(angle * 100) / 100} radians (inverted Y axis)`, 20, 50);
-    // ctx.fillText(`Inner joystick: (${positions.innerX},${positions.innerY})`, 20, 80);
-    // ctx.fillText(`Touch start point: (${positions.fixedX},${positions.fixedY}) or (${Math.round(positions.fixedX/window.innerWidth*1000)/1000},${Math.round(positions.fixedY/window.innerHeight*1000)/1000})`, 20, 110);
+    // ctx.fillText(`Inner joystick: (${positions.innerX},${positions.innerY})`, 200, 200);
+    // ctx.fillText(`Touch start point: (${positions.fixedX},${positions.fixedY}) or (${Math.round(positions.fixedX/window.innerWidth*1000)/1000},${Math.round(positions.fixedY/window.innerHeight*1000)/1000})`, 200, 300);
     
     // Draw joystick outer circle
     ctx.beginPath();
