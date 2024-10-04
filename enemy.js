@@ -154,7 +154,7 @@ export function updateEnemies() {
         }
 
         if (distance > 0) {
-            let speedEnemy = enemy.speed * (gameDifficulty() + 1) / 2;
+            let speedEnemy = enemy.speed * (gameDifficulty() + 2) / 3;
 
             // Normalisation du vecteur directionnel
             const moveX = (dx / distance) * speedEnemy;

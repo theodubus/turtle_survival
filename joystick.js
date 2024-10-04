@@ -118,7 +118,7 @@ export function renderJoystick() {
     //     200
     // );
 
-    ctx.fillText(`Game difficulty: ${gameDifficulty()}`, 200, 200);
+    // ctx.fillText(`Game difficulty: ${gameDifficulty()}`, 200, 200);
 
     // ctx.fillText(`Raw angle: ${Math.round(angle * 100) / 100} radians (inverted Y axis)`, 20, 50);
     // ctx.fillText(`Inner joystick: (${positions.innerX},${positions.innerY})`, 200, 200);
