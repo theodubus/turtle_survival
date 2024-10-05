@@ -190,13 +190,15 @@ export function updateEnemies() {
                 player.hp = Math.min(player.hp + enemy.damage, player.maxHp);
                 return false;
             }
+            if (enemy.disabledUntil < Date.now()){
             player.hp -= enemy.damage;
+            enemy.disabledUntil = Date.now() + 1000;
+            }
 
             if (player.hp <= 0) {
                 restartGame();  // Redémarre le jeu si collision
                 return false;  // Supprime l'ennemi et arrête le jeu
             }
-            //invinciblePlayer(0.25);
         }
 
         if (distance > 0) {
