@@ -3,7 +3,7 @@ import { isPhone } from './utils.js';
 
 let speedPlayer = 2
 if (isPhone()) {
-    speedPlayer = 2; // Vitesse du joueur sur téléphone
+    speedPlayer = 1.5; // Vitesse du joueur sur téléphone
 }
 
 // Configuration du joueur (toujours au centre)
