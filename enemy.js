@@ -190,7 +190,7 @@ export function updateEnemies() {
                 player.hp = Math.min(player.hp + enemy.damage, player.maxHp);
                 return false;
             }
-            if (enemy.disabledUntil < Date.now()){
+            if (true){
             player.hp -= enemy.damage;
             enemy.disabledUntil = Date.now() + 1000;
             }
