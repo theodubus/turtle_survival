@@ -13,8 +13,6 @@ export let player = {
     radius: 30,             // Taille du cercle
     color: "blue",          // Couleur du personnage
     speed: speedPlayer,                // Vitesse de déplacement
-    invincible: 0,           // secondes d'invincibilité
-    invincibleStart: 0,      // temps de début de l'invincibilité
     hp: 10,                   // points de vie
     maxHp: 10,                // points de vie max
     currentImage : 0,        // Image actuelle du joueur
