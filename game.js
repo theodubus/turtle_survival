@@ -1,4 +1,4 @@
-import { drawHealthBar, player, drawPlayer, checkInvincibility } from './player.js';
+import { drawHealthBar, player, drawPlayer } from './player.js';
 import { drawWorld } from './world.js';
 import { enemySpawnInterval, waveEnemy, drawEnemies, updateEnemies, spawnFood } from './enemy.js';
 import { updateMovement, keyDownHandler, keyUpHandler, updateDirection, updateStatic } from './input.js';
@@ -46,7 +46,6 @@ function gameLoop() {
     drawEnemies("below");     // Dessine les ennemis venant du bas
     updateMovement();         // Met à jour la position du monde
     updateEnemies();          // Met à jour les ennemis
-    checkInvincibility();     // Vérifie si le joueur est invincible
     updateDirection();        // Met à jour la direction du joueur
     updateStatic();           // Met à jour l'image statique du joueur
     renderJoystick();             // Boucle de rendu pour les animations
