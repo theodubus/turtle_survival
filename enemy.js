@@ -1,6 +1,6 @@
 import { generateNormalRandom, getExponentialRandom, getRandomPointInCircle } from './utils.js';
 import { ctx, getHeight, getWidth } from './canvas.js';
-import { player, invinciblePlayer } from './player.js';
+import { player } from './player.js';
 import { world } from './world.js';
 import { getGameRunning, startGame, restartGame, setStartTime } from './game.js';
 import { gameDifficulty } from "./game.js";
@@ -195,7 +195,7 @@ export function updateEnemies() {
                 restartGame();  // Redémarre le jeu si collision
                 return false;  // Supprime l'ennemi et arrête le jeu
             }
-            invinciblePlayer(0.25);  // Rend le joueur invincible pendant 2 secondes
+            //invinciblePlayer(0.25);
         }
 
         if (distance > 0) {
