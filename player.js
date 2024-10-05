@@ -80,18 +80,3 @@ export function drawPlayer() {
         }
     }
 }
-
-export function invinciblePlayer(time) {
-    player.invincible = time;
-    player.invincibleStart = Date.now();
-}
-
-export function checkInvincibility() {
-    if (player.invincible > 0) {
-        const invincibleTime = Date.now() - player.invincibleStart;
-        if (invincibleTime > player.invincible * 1000) {
-            player.invincible = 0;
-            player.incincibleStart = 0;
-        }
-    } 
-}
