@@ -100,7 +100,7 @@ export function spawnEnemy(typeElement = 'enemy') {
         currentImage: 1,  // Image actuelle de l'ennemi
         direction: 'b',  // Dernière direction de l'ennemi
         lastChange: Date.now(),  // Dernier changement d'image
-        disabledUntil: Date.now(),  // temps desactivation apres attaque
+        disabledUntil: 0,  // temps desactivation apres attaque
     });
 }
 
