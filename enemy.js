@@ -185,12 +185,12 @@ export function updateEnemies() {
 
         // Détection de collision entre le joueur et l'ennemi
         const tolerance = 1.5; // pour ne pas enlever de la vie si l'ennemi effleure juste le joueur
-        if (tolerance*distance < player.radius + enemy.radius && player.invincible <= 0) {
+        if (tolerance*distance < player.radius + enemy.radius) {
             if (enemy.type == 'food') {
                 player.hp = Math.min(player.hp + enemy.damage, player.maxHp);
                 return false;
             }
-            if (true){
+            if (enemy.disabledUntil < Date.now()){
             player.hp -= enemy.damage;
             enemy.disabledUntil = Date.now() + 1000;
             }
