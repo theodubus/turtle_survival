@@ -99,7 +99,8 @@ export function spawnEnemy(typeElement = 'enemy') {
         animationSpeed: 90,  // Vitesse de l'animation
         currentImage: 1,  // Image actuelle de l'ennemi
         direction: 'b',  // Dernière direction de l'ennemi
-        lastChange: Date.now()  // Dernier changement d'image
+        lastChange: Date.now(),  // Dernier changement d'image
+        disabledUntil: Date.now(),  // temps desactivation apres attaque
     });
 }
 
