@@ -19,3 +19,22 @@ export function isPhone() {
 
     return isMobile && isTouch;
 }
+
+export function getExponentialRandom(lambda) {
+    let U = Math.random();
+    return -Math.log(1 - U) / lambda;
+}
+
+export function getRandomPointInCircle(x, y, r) {
+    // Générer un angle aléatoire entre 0 et 2 * pi
+    let theta = Math.random() * 2 * Math.PI;
+    
+    // Générer une distance aléatoire radiale (racine carrée pour uniformité)
+    let distance = Math.pow(Math.random(), 0.3) * r;
+    
+    // Calculer les coordonnées cibles en utilisant les coordonnées polaires
+    let x_target = x + distance * Math.cos(theta);
+    let y_target = y + distance * Math.sin(theta);
+
+    return [ x_target, y_target ];
+}

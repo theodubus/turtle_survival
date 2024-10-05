@@ -1,7 +1,7 @@
 import { drawHealthBar, player, drawPlayer, checkInvincibility } from './player.js';
-import { world, drawWorld } from './world.js';
-import { enemySpawnInterval, waveEnemy, clearEnemyTimeouts, drawEnemies, updateEnemies } from './enemy.js';
-import { resetKeysPressed, updateMovement, keyDownHandler, keyUpHandler, updateDirection, updateStatic } from './input.js';
+import { drawWorld } from './world.js';
+import { enemySpawnInterval, waveEnemy, drawEnemies, updateEnemies, spawnFood } from './enemy.js';
+import { updateMovement, keyDownHandler, keyUpHandler, updateDirection, updateStatic } from './input.js';
 import { drawTimer, clearCanvas, resizeCanvas } from './canvas.js';
 import { renderJoystick } from './joystick.js';
 
@@ -34,33 +34,8 @@ export function restartGame() {
     // Affiche une alerte système avec le temps écoulé
     alert(`Vous avez fait ${Math.floor(elapsedTime)} secondes`);
     
-    // Réinitialise le monde et les ennemis
-    world.x = 0;
-    world.y = 0;
-    elapsedTime = 0;  // Réinitialise le timer
-
-    // Déjà fait dans la fonction spawnEnemy
-    // startTime = Date.now();  // Redémarre le timer
-    // gameRunning = true;  // Le jeu recommence
-    // enemies = [];
-
-    clearEnemyTimeouts();  // Annuler toutes les vagues d'ennemis en attente
-
-    // Réinitialise les touches enfoncées
-    resetKeysPressed();   // Efface toutes les touches enregistrées
-
-    // Réinitialise les points de vie du joueur
-    player.hp = player.maxHp;
-    player.invincible = 0;
-    player.invincibleStart = 0;
-
-    // clear interval
-    clearInterval(intervalId);
-
-    // new interval
-    intervalId = setInterval(waveEnemy, enemySpawnInterval);
-
-    waveEnemy();  // Lance une nouvelle vague d'ennemis
+    // recharge la page
+    location.reload();
 }
 
 function gameLoop() {
@@ -75,6 +50,7 @@ function gameLoop() {
     updateDirection();        // Met à jour la direction du joueur
     updateStatic();           // Met à jour l'image statique du joueur
     renderJoystick();             // Boucle de rendu pour les animations
+    spawnFood();              // Génère de la nourriture
     
     // Si le jeu est en cours, met à jour le temps écoulé
     if (gameRunning) {
@@ -101,7 +77,7 @@ window.addEventListener('keyup', keyUpHandler);
 waveEnemy();
 
 // Générer des ennemis toutes les 2 secondes
-let intervalId = setInterval(waveEnemy, enemySpawnInterval);
+setInterval(waveEnemy, enemySpawnInterval);
 
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();

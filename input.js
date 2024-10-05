@@ -5,10 +5,6 @@ import { getDirection, getAngle } from './joystick.js';
 // Gestion des touches enfoncées
 let keysPressed = {};
 
-export function resetKeysPressed() {
-    keysPressed = {};
-}
-
 // Met à jour la position du monde en fonction des touches appuyées
 export function updateMovement() {
     let dx = 0;
