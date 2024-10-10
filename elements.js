@@ -64,7 +64,8 @@ export function spawnStar() {
         spawnEnemy('star');
         numStars += 1;
         let mean = meanStarWait;
-        meanStarWait = Math.max(1, meanStarWait * 0.65); 
+        let decrease = (2 - gameDifficulty())/2;
+        meanStarWait = Math.max(1, meanStarWait * decrease); 
         let lambda = 1/mean;
         nextStar = Date.now() + Math.max(Math.min(getExponentialRandom(lambda), 25), 3) * 1000;
     }
