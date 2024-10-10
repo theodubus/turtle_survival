@@ -167,6 +167,9 @@ export function drawPlayer() {
 }
 
 export function eat(hp, animation = true){
+    if (player.InvincibleUntil > Date.now()){
+        animation = false;
+    }
     if (animation){
         if (player.eating){
             player.hp = Math.min(player.hp + player.pendingHp, player.maxHp);
@@ -194,5 +197,5 @@ export function updatePlayer(){
 }
 
 export function getScore() {
-    return Math.floor(elapsedTime) + player.enemyKillCount;
+    return Math.round((Math.floor(elapsedTime) * 0.5 + player.enemyKillCount) * 10);
 }

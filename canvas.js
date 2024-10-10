@@ -56,13 +56,13 @@ export function drawTimer() {
 
     // Dessiner le rectangle de fond
     ctx.fillStyle = "rgba(255, 255, 255, 0.8)"; // Fond blanc semi-transparent
-    ctx.fillRect(rectX, rectY, rectWidth, 2*rectHeight);
+    ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
 
     // Dessiner le texte par-dessus le rectangle
     ctx.fillStyle = "black";
-    ctx.fillText(text, rectX + rectWidth / 2, rectY + rectHeight / 2 + 7); // Centrer le texte
+    ctx.fillText(textScore, rectX + rectWidth / 2, rectY + rectHeight / 2 + 7); // Centrer le texte
     
-    ctx.fillText(textScore, rectX + rectWidth / 2, rectY + rectHeight / 2 + 3 + rectHeight); // Centrer le texte
+    // ctx.fillText(textScore, rectX + rectWidth / 2, rectY + rectHeight / 2 + 3 + rectHeight); // Centrer le texte
 
     
 }
