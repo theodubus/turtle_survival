@@ -1,5 +1,5 @@
 import { ctx, canvas, getHeight, getWidth } from "./canvas.js";
-import { getScale, isPhone, getScale } from './utils.js';
+import { isPhone, getScale } from './utils.js';
 import { elapsedTime } from './game.js';
 
 let speedPlayer = 2
