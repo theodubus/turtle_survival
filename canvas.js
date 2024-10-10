@@ -29,15 +29,15 @@ export function drawTimer() {
     const secondes = temps % 60;
     const minutes = Math.floor(temps / 60);
     let text;
-    if (minutes == 0){ 
-        text = `Temps : ${secondes}s`;
+    let textMin = `${minutes}`;
+    let textSec = `${secondes}`;
+    if (minutes < 10){
+        textMin = `0${minutes}`;
     }
-    else if (secondes < 10){
-        text = `Temps : ${minutes}m 0${secondes}s`;
-    } 
-    else{
-        text = `Temps : ${minutes}m ${secondes}s`;
+    if (secondes < 10){
+        textSec = `0${secondes}`;
     }
+    text = `${textMin}:${textSec}`;
     
     const textScore = `Score : ${getScore()}`;
     ctx.font = "20px Arial";
@@ -45,22 +45,32 @@ export function drawTimer() {
     ctx.textAlign = "center"; // Changer l'alignement du texte au centre
 
     // Mesurer la largeur du texte
-    const textWidth = Math.max(ctx.measureText(text).width, ctx.measureText(textScore).width);
+    const scoreTextWidth = ctx.measureText(textScore).width;
+    const timerTextWidth = ctx.measureText(text).width;
 
-    // Définir les dimensions et la position du rectangle
+    // Définir les dimensions et la position du rectangle score en haut à droite
     const padding = 10;
-    const rectX = canvas.width - textWidth - 40;
-    const rectY = 10;
-    const rectWidth = textWidth + padding * 2;
+    const rectX = canvas.width - scoreTextWidth - 40;
+    const rectY = 0;
+    const rectWidth = scoreTextWidth + padding * 2;
     const rectHeight = 30;
 
+    // Definir les dimensions et la position du rectangle timer, en haut à gauche 
+    const rectX2 = 20;
+    const rectY2 = 0;
+    const rectWidth2 = timerTextWidth + padding * 2;
+
+
     // Dessiner le rectangle de fond
-    ctx.fillStyle = "rgba(255, 255, 255, 0.8)"; // Fond blanc semi-transparent
-    ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.15)"; // Fond blanc semi-transparent
+    ctx.fillRect(0, 0, canvas.width, rectHeight);
+
 
     // Dessiner le texte par-dessus le rectangle
-    ctx.fillStyle = "black";
+    ctx.fillStyle = "white";
     ctx.fillText(textScore, rectX + rectWidth / 2, rectY + rectHeight / 2 + 7); // Centrer le texte
+
+    ctx.fillText(text, rectX2 + rectWidth2 / 2, rectY2 + rectHeight / 2 + 7); // Centrer le texte
     
     // ctx.fillText(textScore, rectX + rectWidth / 2, rectY + rectHeight / 2 + 3 + rectHeight); // Centrer le texte
 

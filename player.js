@@ -30,41 +30,28 @@ export let player = {
 
 // Fonction pour dessiner la barre de vie en haut à gauche
 export function drawHealthBar() {
-    let barWidth;
-    if (isPhone()){
-        barWidth = Math.min(canvas.width / 2, 400);
-    }
-    else{
-        barWidth = canvas.width / 3;
-    }
-    const barHeight = 15;
-    const barPadding = 10;
-    const barX = barPadding;
-    const barY = barPadding;
+    let barWidth = player.radius*1.1;
+    const barHeight = 5;
+    const barPadding = 3;
+    const barX = player.x - barWidth / 2;
+    const barY = player.y + player.radius + barHeight + barPadding;
     const barInnerWidth = (player.hp / player.maxHp) * barWidth;
 
     // gris foncé
     ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
     ctx.fillRect(barX, barY, barWidth, barHeight);
 
-    ctx.fillStyle = "red";
+    ctx.fillStyle = "rgb(0, 255, 0)";
     ctx.fillRect(barX, barY, barInnerWidth, barHeight);
 }
 
 // Fonction pour dessiner la barre de vie en haut à gauche
 export function drawInvincibilityBar() {
     if (player.InvincibleUntil > Date.now()){
-        let barWidth;
-        if (isPhone()){
-            barWidth = Math.min(canvas.width / 2, 400);
-        }
-        else{
-            barWidth = canvas.width / 3;
-        }
+        let barWidth = canvas.width;
         const barHeight = 15;
-        const barPadding = 10;
-        const barX = barPadding;
-        const barY = barPadding + barHeight + barPadding;
+        const barX = 0;
+        const barY = canvas.height - barHeight;
         const timeRemaining = player.InvincibleUntil - Date.now();
         const barInnerWidth = (timeRemaining / 10000) * barWidth;
 
@@ -72,7 +59,7 @@ export function drawInvincibilityBar() {
         ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
         ctx.fillRect(barX, barY, barWidth, barHeight);
 
-        ctx.fillStyle = "rgb(33, 92, 255)";
+        ctx.fillStyle = "rgb(102, 0, 255)";
         ctx.fillRect(barX, barY, barInnerWidth, barHeight);
     }
 }
