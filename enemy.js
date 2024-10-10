@@ -1,6 +1,6 @@
 import { generateNormalRandom, getExponentialRandom, getRandomPointInCircle } from './utils.js';
 import { ctx, getHeight, getWidth } from './canvas.js';
-import { player } from './player.js';
+import { player, eat } from './player.js';
 import { world } from './world.js';
 import { getGameRunning, startGame, restartGame, setStartTime } from './game.js';
 import { gameDifficulty } from "./game.js";
@@ -187,7 +187,7 @@ export function updateEnemies() {
         const tolerance = 1.5; // pour ne pas enlever de la vie si l'ennemi effleure juste le joueur
         if (tolerance*distance < player.radius + enemy.radius) {
             if (enemy.type == 'food') {
-                player.hp = Math.min(player.hp + enemy.damage, player.maxHp);
+                eat(enemy.damage);
                 return false;
             }
             if (enemy.disabledUntil < Date.now()){
