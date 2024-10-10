@@ -13,8 +13,7 @@ let numStars = 0;
 let maxStars = 1;
 let numFood = 0;
 let maxFood = 5;
-const initStarWait = 20;
-let meanStarWait = initStarWait;
+let meanStarWait = 20;
 
 // Fonction pour mettre à jour la position des ennemis lorsque le monde bouge
 export function updateEnemiesPosition(dx, dy) {
@@ -237,7 +236,7 @@ export function updateEnemies() {
                 }
                 if (enemy.type == 'star'){
                     invinciblePlayer(enemy.invincibleDuration);
-                    meanStarWait = initStarWait;
+                    meanStarWait = 25 * (4-gameDifficulty())/4;
                     numStars -= 1;
                 }
                 if (enemy.type == 'enemy'){
@@ -254,7 +253,7 @@ export function updateEnemies() {
 
             if(enemy.type == 'star'){
                 invinciblePlayer(enemy.invincibleDuration);
-                meanStarWait = initStarWait;
+                meanStarWait = 25 * (4-gameDifficulty())/4;
                 numStars -= 1;
                 return false;
             }
