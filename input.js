@@ -92,14 +92,16 @@ export function updateDirection() {
 }
 
 export function updateStatic() {
-    if (!player.currentImage == 0) {
-        if (!getDirection() && !keysPressed['ArrowRight'] && !keysPressed['ArrowLeft'] && !keysPressed['ArrowUp'] && !keysPressed['ArrowDown'] && !keysPressed['d'] && !keysPressed['q'] && !keysPressed['z'] && !keysPressed['s']) {
-            player.currentImage = 0;
+    if (!player.eating){
+        if (!player.currentImage == 0) {
+            if (!getDirection() && !keysPressed['ArrowRight'] && !keysPressed['ArrowLeft'] && !keysPressed['ArrowUp'] && !keysPressed['ArrowDown'] && !keysPressed['d'] && !keysPressed['q'] && !keysPressed['z'] && !keysPressed['s']) {
+                player.currentImage = 0;
+            }
         }
-    }
-    else {
-        if (getDirection() || keysPressed['ArrowRight'] || keysPressed['ArrowLeft'] || keysPressed['ArrowUp'] || keysPressed['ArrowDown'] || keysPressed['d'] || keysPressed['q'] || keysPressed['z'] || keysPressed['s']) {
-            player.currentImage = 1;
+        else {
+            if (getDirection() || keysPressed['ArrowRight'] || keysPressed['ArrowLeft'] || keysPressed['ArrowUp'] || keysPressed['ArrowDown'] || keysPressed['d'] || keysPressed['q'] || keysPressed['z'] || keysPressed['s']) {
+                player.currentImage = 1;
+            }
         }
     }
 }
