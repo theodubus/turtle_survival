@@ -10,7 +10,7 @@ let enemies = [];
 let nextFood = Date.now() + getExponentialRandom(10) * 1000;
 let nextStar = Date.now() + getExponentialRandom(10) * 1000;
 let numStars = 0;
-let maxStars = 3;
+let maxStars = 1;
 let numFood = 0;
 let maxFood = 5;
 
@@ -62,8 +62,8 @@ export function spawnStar() {
     if (Date.now() > nextStar && numStars < maxStars) {
         spawnEnemy('star');
         numStars += 1;
-        let lambda = 1/(10 + 3 * gameDifficulty());
-        nextStar = Date.now() + Math.min(getExponentialRandom(lambda), 25) * 1000;
+        let lambda = 1/(7 + 2 * gameDifficulty());
+        nextStar = Date.now() + Math.min(getExponentialRandom(lambda), 15) * 1000;
     }
 }
 
