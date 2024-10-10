@@ -62,8 +62,8 @@ export function spawnStar() {
     if (Date.now() > nextStar && numStars < maxStars) {
         spawnEnemy('star');
         numStars += 1;
-        let lambda = 1/(15 + 3 * gameDifficulty());
-        nextStar = Date.now() + getExponentialRandom(lambda) * 1000;
+        let lambda = 1/(10 + 3 * gameDifficulty());
+        nextStar = Date.now() + Math.min(getExponentialRandom(lambda), 25) * 1000;
     }
 }
 
