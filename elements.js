@@ -1,4 +1,4 @@
-import { generateNormalRandom, getExponentialRandom, getRandomPointInCircle, getScale } from './utils.js';
+import { generateNormalRandom, getExponentialRandom, getRandomPointInCircle, getScale, isPhone } from './utils.js';
 import { ctx, getHeight, getWidth } from './canvas.js';
 import { player, eat, invinciblePlayer } from './player.js';
 import { world } from './world.js';
@@ -13,7 +13,8 @@ let numStars = 0;
 let maxStars = 1;
 let numFood = 0;
 let maxFood = 5;
-
+const initStarWait = 20;
+let meanStarWait = initStarWait;
 
 // Fonction pour mettre à jour la position des ennemis lorsque le monde bouge
 export function updateEnemiesPosition(dx, dy) {
@@ -41,7 +42,7 @@ const enemySpawnRadius = {
 };
 
 // Fonction pour générer une vague d'ennemis, 10 par defaut, sinon n (parametre)
-export function waveEnemy(maxN = 100) {
+export function waveEnemy(maxN = 125) {
     let n = Math.ceil(maxN * gameDifficulty());
     for (let i = 0; i < n; i++) {
         // wait 0.1 second before spawning the next enemy
@@ -62,8 +63,10 @@ export function spawnStar() {
     if (Date.now() > nextStar && numStars < maxStars) {
         spawnEnemy('star');
         numStars += 1;
-        let lambda = 1/(7 + 2 * gameDifficulty());
-        nextStar = Date.now() + Math.min(getExponentialRandom(lambda), 15) * 1000;
+        let mean = meanStarWait;
+        meanStarWait = Math.max(1, meanStarWait * 0.65); 
+        let lambda = 1/mean;
+        nextStar = Date.now() + Math.max(Math.min(getExponentialRandom(lambda), 25), 3) * 1000;
     }
 }
 
@@ -233,6 +236,7 @@ export function updateEnemies() {
                 }
                 if (enemy.type == 'star'){
                     invinciblePlayer(enemy.invincibleDuration);
+                    meanStarWait = initStarWait;
                     numStars -= 1;
                 }
                 if (enemy.type == 'enemy'){
@@ -249,6 +253,7 @@ export function updateEnemies() {
 
             if(enemy.type == 'star'){
                 invinciblePlayer(enemy.invincibleDuration);
+                meanStarWait = initStarWait;
                 numStars -= 1;
                 return false;
             }
