@@ -38,3 +38,10 @@ export function getRandomPointInCircle(x, y, r) {
 
     return [ x_target, y_target ];
 }
+
+export function getScale(){
+    if (isPhone()){
+        return 0.75;
+    }
+    return 1;
+}

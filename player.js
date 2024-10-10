@@ -1,5 +1,5 @@
 import { ctx, canvas, getHeight, getWidth } from "./canvas.js";
-import { isPhone } from './utils.js';
+import { getScale, isPhone, getScale } from './utils.js';
 import { elapsedTime } from './game.js';
 
 let speedPlayer = 2
@@ -11,7 +11,7 @@ if (isPhone()) {
 export let player = {
     x: getWidth() / 2,    // Le joueur reste toujours au centre du canvas
     y: getHeight() / 2,
-    radius: 30,             // Taille du cercle
+    radius: 30 * getScale(),             // Taille du cercle
     color: "blue",          // Couleur du personnage
     speed: speedPlayer,                // Vitesse de déplacement
     hp: 10,                   // points de vie

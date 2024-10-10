@@ -1,4 +1,4 @@
-import { generateNormalRandom, getExponentialRandom, getRandomPointInCircle } from './utils.js';
+import { generateNormalRandom, getExponentialRandom, getRandomPointInCircle, getScale } from './utils.js';
 import { ctx, getHeight, getWidth } from './canvas.js';
 import { player, eat, invinciblePlayer } from './player.js';
 import { world } from './world.js';
@@ -13,6 +13,7 @@ let numStars = 0;
 let maxStars = 3;
 let numFood = 0;
 let maxFood = 5;
+
 
 // Fonction pour mettre à jour la position des ennemis lorsque le monde bouge
 export function updateEnemiesPosition(dx, dy) {
@@ -114,7 +115,7 @@ export function spawnEnemy(typeElement = 'enemy') {
         targetX: undefined,
         targetY: undefined,
         timeLeaveTarget: -1,
-        radius: radiusEnemy,  // Taille des ennemis
+        radius: radiusEnemy * getScale(),  // Taille des ennemis
         heightMultiplier: hMultiplier,  // Multiplie la taille de l'ennemi
         speed: speedEnemy, // Vitesse de déplacement
         maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.1), // Distance maximale avant que l'ennemi ne disparaisse
