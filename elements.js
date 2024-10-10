@@ -1,6 +1,6 @@
 import { generateNormalRandom, getExponentialRandom, getRandomPointInCircle } from './utils.js';
 import { ctx, getHeight, getWidth } from './canvas.js';
-import { player, eat } from './player.js';
+import { player, eat, invinciblePlayer } from './player.js';
 import { world } from './world.js';
 import { getGameRunning, startGame, restartGame, setStartTime } from './game.js';
 import { gameDifficulty } from "./game.js";
@@ -8,6 +8,11 @@ import { gameDifficulty } from "./game.js";
 // Tableau pour stocker les ennemis
 let enemies = [];
 let nextFood = Date.now() + getExponentialRandom(10) * 1000;
+let nextStar = Date.now() + getExponentialRandom(10) * 1000;
+let numStars = 0;
+let maxStars = 3;
+let numFood = 0;
+let maxFood = 5;
 
 // Fonction pour mettre à jour la position des ennemis lorsque le monde bouge
 export function updateEnemiesPosition(dx, dy) {
@@ -30,8 +35,8 @@ export const enemySpawnInterval = 10000;
 
 // Rayon minimal et maximal autour du joueur où les ennemis peuvent apparaître
 const enemySpawnRadius = {
-    min: Math.round(Math.max(getWidth(), getHeight())/1.30) + 20,
-    max: Math.round(Math.max(getWidth(), getHeight())/1.30) + 50,
+    min: Math.round(Math.max(getWidth(), getHeight())*0.79),
+    max: Math.round(Math.max(getWidth(), getHeight())*0.83),
 };
 
 // Fonction pour générer une vague d'ennemis, 10 par defaut, sinon n (parametre)
@@ -44,13 +49,22 @@ export function waveEnemy(maxN = 100) {
 }
 
 export function spawnFood() {
-    if (Date.now() > nextFood) {
+    if (Date.now() > nextFood && numFood < maxFood) {
         spawnEnemy('food');
-        let lambda = 1/(2 + 1 * gameDifficulty());
+        numFood += 1;
+        let lambda = 1/(3 + 1 * gameDifficulty()); // 3s puis converge vers 4s
         nextFood = Date.now() + getExponentialRandom(lambda) * 1000;
     }
 }
 
+export function spawnStar() {
+    if (Date.now() > nextStar && numStars < maxStars) {
+        spawnEnemy('star');
+        numStars += 1;
+        let lambda = 1/(/*15*/0 + 3 * gameDifficulty());
+        nextStar = Date.now() + getExponentialRandom(lambda) * 1000;
+    }
+}
 
 export function spawnEnemy(typeElement = 'enemy') {
     if (!getGameRunning()) {
@@ -71,15 +85,24 @@ export function spawnEnemy(typeElement = 'enemy') {
     let speedEnemy;
     let damageEnemy;
     let radiusEnemy;
+    let hMultiplier;
     if (typeElement == 'food') {
         speedEnemy = playerSpeed * 0.8;
-        damageEnemy = 2;
+        damageEnemy = 3;
         radiusEnemy = 14;
+        hMultiplier = 1.3;
+    }
+    else if (typeElement == 'star'){
+        speedEnemy = 1; // pas 0 pour les calculs de position
+        damageEnemy = 0;
+        radiusEnemy = 18;
+        hMultiplier = 1;
     }
     else {
         speedEnemy = Math.max(0.3 * playerSpeed, Math.min(0.8 * playerSpeed, generateNormalRandom(0.5 * playerSpeed, 0.2 * playerSpeed)));  // Vitesse de déplacement
         damageEnemy = 1;
         radiusEnemy = 18
+        hMultiplier = 1.3;
     }
 
     enemies.push({
@@ -92,15 +115,16 @@ export function spawnEnemy(typeElement = 'enemy') {
         targetY: undefined,
         timeLeaveTarget: -1,
         radius: radiusEnemy,  // Taille des ennemis
-        heightMultiplier: 1.3,  // Multiplie la taille de l'ennemi
+        heightMultiplier: hMultiplier,  // Multiplie la taille de l'ennemi
         speed: speedEnemy, // Vitesse de déplacement
-        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.25), // Distance maximale avant que l'ennemi ne disparaisse
+        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.1), // Distance maximale avant que l'ennemi ne disparaisse
         damage: damageEnemy,  // Dégâts infligés au joueur
         animationSpeed: 90,  // Vitesse de l'animation
         currentImage: 1,  // Image actuelle de l'ennemi
         direction: 'b',  // Dernière direction de l'ennemi
         lastChange: Date.now(),  // Dernier changement d'image
         disabledUntil: 0,  // temps desactivation apres attaque
+        invincibleDuration : 10, // temps d'invincibilité
     });
 }
 
@@ -111,6 +135,8 @@ const numImages = 8; // Nombre d'images par direction (de 0 à 7)
 // Objet pour stocker les images par direction
 const enemyImages = {};
 const foodImages = {};
+const starImage = new Image();
+starImage.src = 'assets/star.png';
 
 // Charger les images pour chaque direction
 directions.forEach(direction => {
@@ -141,31 +167,37 @@ export function drawEnemies(direction = "below") {
         const width = scale;  // Largeur de l'ennemi
         const height = enemy.heightMultiplier*scale; // Hauteur de l'ennemi
 
-        let imgDict;
+        let imgDisp;
         if (enemy.type == 'food') {
-            imgDict = foodImages;
             if (enemy.timeLeaveTarget > 0){
                 enemy.currentImage = 0;
             }
+            imgDisp = foodImages[enemy.direction][enemy.currentImage];
+        }
+        else if (enemy.type == 'star') {
+            imgDisp = starImage;
         }
         else {
-            imgDict = enemyImages;
+            imgDisp = enemyImages[enemy.direction][enemy.currentImage];
         }
 
         ctx.drawImage(
-            imgDict[enemy.direction][enemy.currentImage],
+            imgDisp,
             enemy.x - world.x - width / 2, // Position X (centre l'image)
             enemy.y - world.y - height / 2, // Position Y (centre l'image)
             width, // Largeur
             height // Hauteur
         );
 
-        // temps depuis lequel on a changé l'image
-        const timeSinceChange = Date.now() - enemy.lastChange;
-        if (timeSinceChange > enemy.animationSpeed) {
-            // Mettez à jour l'index de l'image actuelle, max entre 1 et le resultat 
-            enemy.currentImage = Math.max(1, (enemy.currentImage + 1) % numImages);
-            enemy.lastChange = Date.now();
+        if (enemy.type == 'food' || enemy.type == 'enemy'){
+        // if (true){
+            // temps depuis lequel on a changé l'image
+            const timeSinceChange = Date.now() - enemy.lastChange;
+            if (timeSinceChange > enemy.animationSpeed) {
+                // Mettez à jour l'index de l'image actuelle, max entre 1 et le resultat 
+                enemy.currentImage = Math.max(1, (enemy.currentImage + 1) % numImages);
+                enemy.lastChange = Date.now();
+            }
         }
     });
 }
@@ -180,16 +212,47 @@ export function updateEnemies() {
 
         // Si l'ennemi est trop loin, on l'enlève
         if (distance > enemy.maxDistance) {
+            if (enemy.type == 'star'){
+                numStars -= 1;
+            }
+            if (enemy.type == 'food'){
+                numFood -= 1;
+            }
             return false;  // Supprime cet ennemi
         }
 
         // Détection de collision entre le joueur et l'ennemi
         const tolerance = 1.5; // pour ne pas enlever de la vie si l'ennemi effleure juste le joueur
         if (tolerance*distance < player.radius + enemy.radius) {
-            if (enemy.type == 'food') {
-                eat(enemy.damage);
+
+            if (player.InvincibleUntil > Date.now()){
+                if (enemy.type == 'food') {
+                    eat(enemy.damage, false);
+                    numFood -= 1;
+                }
+                if (enemy.type == 'star'){
+                    invinciblePlayer(enemy.invincibleDuration);
+                    numStars -= 1;
+                }
+                if (enemy.type == 'enemy'){
+                    player.enemyKillCount += 1;
+                }
                 return false;
             }
+
+            if (enemy.type == 'food') {
+                eat(enemy.damage);
+                numFood -= 1;
+                return false;
+            }
+
+            if(enemy.type == 'star'){
+                invinciblePlayer(enemy.invincibleDuration);
+                numStars -= 1;
+                return false;
+            }
+
+
             if (enemy.disabledUntil < Date.now()){
                 player.hp -= enemy.damage;
                 enemy.disabledUntil = Date.now() + 1000;
@@ -229,7 +292,7 @@ export function updateEnemies() {
                 
 
             }
-            else {
+            else if (enemy.type == 'enemy'){
                 let speedEnemy = enemy.speed * (gameDifficulty() + 2) / 3;
                 // Normalisation du vecteur directionnel
                 const moveX = (dx / distance) * speedEnemy;
@@ -261,7 +324,6 @@ export function updateEnemies() {
                 enemy.direction = 'hd';  // Haut droite
             }
         }
-
         return true;  // Conserve cet ennemi
     });
 }

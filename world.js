@@ -1,5 +1,5 @@
 import { ctx, getHeight, getWidth } from './canvas.js';
-import { updateEnemiesPosition } from './enemy.js';
+import { updateEnemiesPosition } from './elements.js';
 
 // Coordonnées du monde (représente le déplacement dans l'aire infinie)
 export let world = {

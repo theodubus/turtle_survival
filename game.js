@@ -1,6 +1,6 @@
-import { drawHealthBar, player, drawPlayer } from './player.js';
+import { drawHealthBar, drawInvincibilityBar, drawPlayer, updatePlayer } from './player.js';
 import { drawWorld } from './world.js';
-import { enemySpawnInterval, waveEnemy, drawEnemies, updateEnemies, spawnFood } from './enemy.js';
+import { enemySpawnInterval, waveEnemy, drawEnemies, updateEnemies, spawnFood, spawnStar } from './elements.js';
 import { updateMovement, keyDownHandler, keyUpHandler, updateDirection, updateStatic } from './input.js';
 import { drawTimer, clearCanvas, resizeCanvas } from './canvas.js';
 import { renderJoystick } from './joystick.js';
@@ -50,6 +50,9 @@ function gameLoop() {
     updateStatic();           // Met à jour l'image statique du joueur
     renderJoystick();             // Boucle de rendu pour les animations
     spawnFood();              // Génère de la nourriture
+    spawnStar();              // Génère des étoiles
+    updatePlayer();           // Met à jour le joueur
+    drawInvincibilityBar();   // Dessine la barre d'invincibilité en haut à gauche
     
     // Si le jeu est en cours, met à jour le temps écoulé
     if (gameRunning) {

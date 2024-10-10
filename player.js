@@ -1,5 +1,6 @@
-import { ctx, getHeight, getWidth } from "./canvas.js";
+import { ctx, canvas, getHeight, getWidth } from "./canvas.js";
 import { isPhone } from './utils.js';
+import { elapsedTime } from './game.js';
 
 let speedPlayer = 2
 if (isPhone()) {
@@ -19,14 +20,24 @@ export let player = {
     lastChange: 0,           // Dernier changement d'image
     direction: 'b',      // Dernière direction du joueur
     animationSpeed: 35,     // Vitesse de l'animation
+    baseAnimationSpeed : 35,
+    bouleAnimationSpeed : 70,
     eating : false,
     pendingHp : 0,
+    InvincibleUntil : 0,
+    enemyKillCount: 0,
 };
 
 // Fonction pour dessiner la barre de vie en haut à gauche
 export function drawHealthBar() {
-    const barWidth = 200;
-    const barHeight = 20;
+    let barWidth;
+    if (isPhone()){
+        barWidth = Math.min(canvas.width / 2, 400);
+    }
+    else{
+        barWidth = canvas.width / 3;
+    }
+    const barHeight = 15;
     const barPadding = 10;
     const barX = barPadding;
     const barY = barPadding;
@@ -40,23 +51,57 @@ export function drawHealthBar() {
     ctx.fillRect(barX, barY, barInnerWidth, barHeight);
 }
 
+// Fonction pour dessiner la barre de vie en haut à gauche
+export function drawInvincibilityBar() {
+    if (player.InvincibleUntil > Date.now()){
+        let barWidth;
+        if (isPhone()){
+            barWidth = Math.min(canvas.width / 2, 400);
+        }
+        else{
+            barWidth = canvas.width / 3;
+        }
+        const barHeight = 15;
+        const barPadding = 10;
+        const barX = barPadding;
+        const barY = barPadding + barHeight + barPadding;
+        const timeRemaining = player.InvincibleUntil - Date.now();
+        const barInnerWidth = (timeRemaining / 10000) * barWidth;
+
+        // gris foncé
+        ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+
+        ctx.fillStyle = "rgb(33, 92, 255)";
+        ctx.fillRect(barX, barY, barInnerWidth, barHeight);
+    }
+}
+
 // Directions disponibles
 const directions = ['h', 'hg', 'hd', 'b', 'bg', 'bd', 'g', 'd'];
 const numImages = 17; // Nombre d'images par direction (de 0 à 16)
 const numFoodImages = 19; // Nombre d'images pour manger (de 1 à 19)
+const numBouleImages = 6;
 
 // Objet pour stocker les images par direction
 const playerImages = {};
-
+const bouleImages = {};
 const eatingImages = [];
 
 // Charger les images pour chaque direction
 directions.forEach(direction => {
     playerImages[direction] = []; // Créer un tableau pour chaque direction
+    bouleImages[direction] = []; // Créer un tableau pour chaque direction
     for (let i = 0; i < numImages; i++) {
         const img = new Image();
         img.src = `assets/player/${direction}_${i}.png`; // Nom du fichier d'image
         playerImages[direction].push(img); // Ajouter l'image au tableau de la direction
+
+        if (i < numBouleImages){
+            const imgBoule = new Image();
+            imgBoule.src = `assets/boule/boule_${direction}_${i+1}.png`; // Nom du fichier d'image
+            bouleImages[direction].push(imgBoule); // Ajouter l'image au tableau de la direction
+        }
     }
 });
 
@@ -74,10 +119,13 @@ export function drawPlayer() {
     const width = scale;  // Largeur du joueur
     const height = scale; // Hauteur du joueur
 
-    let imageDisplay = undefined;
+    let imageDisplay;
 
     if (player.eating){
         imageDisplay = eatingImages[player.currentImage];
+    }
+    else if (player.InvincibleUntil > Date.now()){
+        imageDisplay = bouleImages[player.direction][player.currentImage];
     }
     else{
         imageDisplay = playerImages[player.direction][player.currentImage];
@@ -96,7 +144,11 @@ export function drawPlayer() {
     const timeSinceChange = Date.now() - player.lastChange;
     if (timeSinceChange > player.animationSpeed) {
         if (!player.eating){
-            if (!player.currentImage == 0){
+            if (player.InvincibleUntil > Date.now()){
+                player.currentImage = (player.currentImage + 1) % numBouleImages;
+                player.lastChange = Date.now();
+            }
+            else if (!player.currentImage == 0){
                 // Mettez à jour l'index de l'image actuelle, max entre 1 et le resultat 
                 player.currentImage = Math.max(1, (player.currentImage + 1) % numImages);
                 player.lastChange = Date.now();
@@ -114,12 +166,33 @@ export function drawPlayer() {
     }
 }
 
-export function eat(hp){
-    if (player.eating){
-        player.hp = Math.min(player.hp + player.pendingHp, player.maxHp);
-        player.pendingHp = 0;
+export function eat(hp, animation = true){
+    if (animation){
+        if (player.eating){
+            player.hp = Math.min(player.hp + player.pendingHp, player.maxHp);
+            player.pendingHp = 0;
+        }
+        player.pendingHp = hp;
+        player.currentImage = 1;
+        player.eating = true;
     }
-    player.pendingHp = hp;
-    player.currentImage = 1;
-    player.eating = true;
+    else{
+        player.hp = Math.min(player.hp + hp, player.maxHp);
+    }
+}
+
+export function invinciblePlayer(duration){
+    player.InvincibleUntil = Date.now() + duration * 1000;
+    player.currentImage = 0;
+    player.animationSpeed = player.bouleAnimationSpeed;
+}
+
+export function updatePlayer(){
+    if (player.InvincibleUntil < Date.now()){
+        player.animationSpeed = player.baseAnimationSpeed;
+    }
+}
+
+export function getScore() {
+    return Math.floor(elapsedTime) + player.enemyKillCount;
 }

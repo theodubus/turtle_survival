@@ -9,32 +9,36 @@ let keysPressed = {};
 export function updateMovement() {
     let dx = 0;
     let dy = 0;
+    let multiplicator = 1;
+    if (player.InvincibleUntil > Date.now()){
+        multiplicator = 2;
+    }
 
     const angle = getAngle();
 
     if (angle) {
-        dx = -Math.cos(angle) * player.speed;
-        dy = Math.sin(angle) * player.speed;
+        dx = -Math.cos(angle) * player.speed * multiplicator;
+        dy = Math.sin(angle) * player.speed * multiplicator;
     }
     else {
         if (keysPressed['ArrowRight'] || keysPressed['d']) {
-            dx -= player.speed;
+            dx -= player.speed * multiplicator;
         }
         if (keysPressed['ArrowLeft'] || keysPressed['q']) {
-            dx += player.speed;
+            dx += player.speed * multiplicator;
         }
         if (keysPressed['ArrowUp'] || keysPressed['z']) {
-            dy += player.speed;
+            dy += player.speed * multiplicator;
         }
         if (keysPressed['ArrowDown'] || keysPressed['s']) {
-            dy -= player.speed;
+            dy -= player.speed * multiplicator;
         }
         
         if (dx != 0 && dy != 0) {
             // on normalise pour que le deplacement total soit la vitesse du joueur
             const norm = Math.sqrt(dx * dx + dy * dy);
-            dx = dx / norm * player.speed;
-            dy = dy / norm * player.speed;
+            dx = dx / norm * player.speed * multiplicator;
+            dy = dy / norm * player.speed * multiplicator;
         }
     }
 
