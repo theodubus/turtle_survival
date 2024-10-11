@@ -67,7 +67,7 @@ export function spawnStar() {
         spawnEnemy('star');
         numStars += 1;
         let mean = meanStarWait;
-        let decrease = (2 - gameDifficulty())/2;
+        let decrease = (2 - gameDifficulty())/3;
         meanStarWait = Math.max(1, meanStarWait * decrease); 
         let lambda = 1/mean;
         nextStar = Date.now() + Math.max(Math.min(getExponentialRandom(lambda), 25), 1) * 1000;
@@ -125,7 +125,7 @@ export function spawnEnemy(typeElement = 'enemy') {
         radius: radiusEnemy * getScale(),  // Taille des ennemis
         heightMultiplier: hMultiplier,  // Multiplie la taille de l'ennemi
         speed: speedEnemy, // Vitesse de déplacement
-        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.20) / dividerRadius, // Distance maximale avant que l'ennemi ne disparaisse
+        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.15) / dividerRadius, // Distance maximale avant que l'ennemi ne disparaisse
         damage: damageEnemy,  // Dégâts infligés au joueur
         animationSpeed: 90,  // Vitesse de l'animation
         currentImage: 1,  // Image actuelle de l'ennemi
