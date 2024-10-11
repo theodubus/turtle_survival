@@ -1,9 +1,8 @@
 import { generateNormalRandom, getExponentialRandom, getRandomPointInCircle, getScale, isPhone } from './utils.js';
 import { ctx, getHeight, getWidth } from './canvas.js';
-import { player, eat, invinciblePlayer } from './player.js';
+import { player, eat, invinciblePlayer, drawHealthBar } from './player.js';
 import { world } from './world.js';
-import { getGameRunning, startGame, restartGame, setStartTime } from './game.js';
-import { gameDifficulty } from "./game.js";
+import { getGameRunning, startGame, restartGame, setStartTime, gameDifficulty } from './game.js';
 
 // Tableau pour stocker les ennemis
 let enemies = [];
