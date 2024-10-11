@@ -4,7 +4,7 @@ import { elapsedTime } from './game.js';
 
 let speedPlayer = 2
 if (isPhone()) {
-    speedPlayer = 1.25; // Vitesse du joueur sur téléphone
+    speedPlayer = 1; // Vitesse du joueur sur téléphone
 }
 
 // Configuration du joueur (toujours au centre)
