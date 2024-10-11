@@ -269,6 +269,7 @@ export function updateEnemies() {
             }
 
             if (player.hp <= 0) {
+                drawHealthBar();
                 restartGame();  // Redémarre le jeu si collision
                 return false;  // Supprime l'ennemi et arrête le jeu
             }
