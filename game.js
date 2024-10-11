@@ -1,4 +1,4 @@
-import { drawHealthBar, drawInvincibilityBar, drawPlayer, updatePlayer } from './player.js';
+import { drawHealthBar, drawInvincibilityBar, drawPlayer, updatePlayer, getScore } from './player.js';
 import { drawWorld } from './world.js';
 import { enemySpawnInterval, waveEnemy, drawEnemies, updateEnemies, spawnFood, spawnStar } from './elements.js';
 import { updateMovement, keyDownHandler, keyUpHandler, updateDirection, updateStatic } from './input.js';
@@ -32,7 +32,7 @@ export function restartGame() {
     gameRunning = false;  // Le jeu s'arrête
     
     // Affiche une alerte système avec le temps écoulé
-    alert(`Vous avez fait ${Math.floor(elapsedTime)} secondes`);
+    alert(`Vous avez fait ${getScore()} points`);
     
     // recharge la page
     location.reload();
