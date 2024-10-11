@@ -34,10 +34,15 @@ export function updateEnemiesPosition(dx, dy) {
 // Intervalle de temps pour ajouter une vague d'ennemis (en millisecondes)
 export const enemySpawnInterval = 10000;
 
+let divider = 1;
+if (isPhone()){
+    divider = 1.8;
+}
+
 // Rayon minimal et maximal autour du joueur où les ennemis peuvent apparaître
 const enemySpawnRadius = {
-    min: Math.round(Math.max(getWidth(), getHeight())*0.79),
-    max: Math.round(Math.max(getWidth(), getHeight())*0.83),
+    min: Math.round(Math.max(getWidth(), getHeight())*0.79) / divider,
+    max: Math.round(Math.max(getWidth(), getHeight())*0.83) / divider,
 };
 
 // Fonction pour générer une vague d'ennemis, 10 par defaut, sinon n (parametre)
