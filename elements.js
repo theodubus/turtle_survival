@@ -14,6 +14,10 @@ let maxStars = 1;
 let numFood = 0;
 let maxFood = 5;
 let meanStarWait = 20;
+let dividerRadius = 1;
+if (isPhone()){
+    dividerRadius = 1.8;
+}
 
 // Fonction pour mettre à jour la position des ennemis lorsque le monde bouge
 export function updateEnemiesPosition(dx, dy) {
@@ -34,15 +38,11 @@ export function updateEnemiesPosition(dx, dy) {
 // Intervalle de temps pour ajouter une vague d'ennemis (en millisecondes)
 export const enemySpawnInterval = 10000;
 
-let divider = 1;
-if (isPhone()){
-    divider = 1.8;
-}
 
 // Rayon minimal et maximal autour du joueur où les ennemis peuvent apparaître
 const enemySpawnRadius = {
-    min: Math.round(Math.max(getWidth(), getHeight())*0.79) / divider,
-    max: Math.round(Math.max(getWidth(), getHeight())*0.83) / divider,
+    min: Math.round(Math.max(getWidth(), getHeight())*0.79) / dividerRadius,
+    max: Math.round(Math.max(getWidth(), getHeight())*0.83) / dividerRadius,
 };
 
 // Fonction pour générer une vague d'ennemis, 10 par defaut, sinon n (parametre)
@@ -129,7 +129,7 @@ export function spawnEnemy(typeElement = 'enemy') {
         radius: radiusEnemy * getScale(),  // Taille des ennemis
         heightMultiplier: hMultiplier,  // Multiplie la taille de l'ennemi
         speed: speedEnemy, // Vitesse de déplacement
-        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.1), // Distance maximale avant que l'ennemi ne disparaisse
+        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.1) / dividerRadius, // Distance maximale avant que l'ennemi ne disparaisse
         damage: damageEnemy,  // Dégâts infligés au joueur
         animationSpeed: 90,  // Vitesse de l'animation
         currentImage: 1,  // Image actuelle de l'ennemi
