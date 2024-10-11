@@ -69,9 +69,6 @@ export function spawnStar() {
         numStars += 1;
         let mean = meanStarWait;
         let decrease = (2 - gameDifficulty())/2;
-        if (isPhone()){
-            decrease = (2 - gameDifficulty())/3;
-        }
         meanStarWait = Math.max(1, meanStarWait * decrease); 
         let lambda = 1/mean;
         nextStar = Date.now() + Math.max(Math.min(getExponentialRandom(lambda), 25), 1) * 1000;
