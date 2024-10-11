@@ -30,6 +30,7 @@ export let player = {
 
 // Fonction pour dessiner la barre de vie en haut à gauche
 export function drawHealthBar() {
+    if (player.InvincibleUntil < Date.now()){
     let barWidth = player.radius*1.1;
     const barHeight = 5;
     const barPadding = 3;
@@ -43,15 +44,17 @@ export function drawHealthBar() {
 
     ctx.fillStyle = "rgb(0, 255, 0)";
     ctx.fillRect(barX, barY, barInnerWidth, barHeight);
+    }
 }
 
 // Fonction pour dessiner la barre de vie en haut à gauche
 export function drawInvincibilityBar() {
     if (player.InvincibleUntil > Date.now()){
-        let barWidth = canvas.width;
-        const barHeight = 15;
-        const barX = 0;
-        const barY = canvas.height - barHeight;
+        let barWidth = player.radius * 1.1;
+        const barHeight = 5;
+        const barPadding = 3;
+        const barX = player.x - barWidth / 2;
+        const barY = player.y + player.radius + barHeight + barPadding;
         const timeRemaining = player.InvincibleUntil - Date.now();
         const barInnerWidth = (timeRemaining / 10000) * barWidth;
 
