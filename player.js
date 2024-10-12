@@ -41,9 +41,10 @@ export function drawHealthBar() {
     // gris foncé
     ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
     ctx.fillRect(barX, barY, barWidth, barHeight);
-
+    if(player.hp > 0){
     ctx.fillStyle = "rgb(0, 255, 0)";
     ctx.fillRect(barX, barY, barInnerWidth, barHeight);
+    }
     }
 }
 
