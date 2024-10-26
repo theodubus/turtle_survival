@@ -1,9 +1,8 @@
 import { generateNormalRandom, getNormalRandom, getRandomPointInCircle, getScale, isPhone } from './utils.js';
 import { ctx, getHeight, getWidth } from './canvas.js';
-import { player, eat, invinciblePlayer } from './player.js';
+import { player, eat, invinciblePlayer, drawHealthBar } from './player.js';
 import { world } from './world.js';
-import { getGameRunning, startGame, restartGame, setStartTime } from './game.js';
-import { gameDifficulty } from "./game.js";
+import { getGameRunning, startGame, restartGame, setStartTime, gameDifficulty } from './game.js';
 
 // Tableau pour stocker les ennemis
 let enemies = [];
@@ -142,7 +141,7 @@ export function spawnEnemy(typeElement = 'enemy') {
         radius: radiusEnemy * getScale(),  // Taille des ennemis
         heightMultiplier: hMultiplier,  // Multiplie la taille de l'ennemi
         speed: speedEnemy, // Vitesse de déplacement
-        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.80) / dividerRadius, // Distance maximale avant que l'ennemi ne disparaisse
+        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.20) / dividerRadius, // Distance maximale avant que l'ennemi ne disparaisse
         damage: damageEnemy,  // Dégâts infligés au joueur
         animationSpeed: 90,  // Vitesse de l'animation
         currentImage: 1,  // Image actuelle de l'ennemi
@@ -435,6 +434,7 @@ export function updateEnemies() {
             }
 
             if (player.hp <= 0) {
+                drawHealthBar();
                 restartGame();  // Redémarre le jeu si collision
                 return false;  // Supprime l'ennemi et arrête le jeu
             }

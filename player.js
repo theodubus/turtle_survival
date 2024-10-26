@@ -4,7 +4,7 @@ import { elapsedTime } from './game.js';
 
 let speedPlayer = 2
 if (isPhone()) {
-    speedPlayer = 0.75; // Vitesse du joueur sur téléphone
+    speedPlayer = 1.1; // Vitesse du joueur sur téléphone
 }
 
 // Configuration du joueur (toujours au centre)
@@ -30,6 +30,7 @@ export let player = {
 
 // Fonction pour dessiner la barre de vie en haut à gauche
 export function drawHealthBar() {
+    if (player.InvincibleUntil < Date.now()){
     let barWidth = player.radius*1.1;
     const barHeight = 5;
     const barPadding = 3;
@@ -40,18 +41,21 @@ export function drawHealthBar() {
     // gris foncé
     ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
     ctx.fillRect(barX, barY, barWidth, barHeight);
-
+    if(player.hp > 0){
     ctx.fillStyle = "rgb(0, 255, 0)";
     ctx.fillRect(barX, barY, barInnerWidth, barHeight);
+    }
+    }
 }
 
 // Fonction pour dessiner la barre de vie en haut à gauche
 export function drawInvincibilityBar() {
     if (player.InvincibleUntil > Date.now()){
-        let barWidth = canvas.width;
-        const barHeight = 15;
-        const barX = 0;
-        const barY = canvas.height - barHeight;
+        let barWidth = player.radius * 1.1;
+        const barHeight = 5;
+        const barPadding = 3;
+        const barX = player.x - barWidth / 2;
+        const barY = player.y + player.radius + barHeight + barPadding;
         const timeRemaining = player.InvincibleUntil - Date.now();
         const barInnerWidth = (timeRemaining / 10000) * barWidth;
 
