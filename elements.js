@@ -59,9 +59,8 @@ export function waveEnemy(maxN = 125) {
 }
 
 export function spawnFood() {
-    // let mean = 30 - 10 * gameDifficulty();
-    let mean = 1;
-    let stdDev = 0.5;//5;
+    let mean = 30 - 10 * gameDifficulty();
+    let stdDev = 5;
     if (nextFood == undefined){
         nextFood = Date.now() + getNormalRandom(mean, stdDev) * 1000;
     }
