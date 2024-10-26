@@ -45,8 +45,8 @@ const enemySpawnRadius = {
 
 // Rayon minimal et maximal autour du joueur où les ennemis peuvent apparaître
 const elementSpawnRadius = {
-    min: Math.round(Math.max(getWidth(), getHeight())*0.90) / dividerRadius,
-    max: Math.round(Math.max(getWidth(), getHeight())*1.45) / dividerRadius,
+    min: Math.round(Math.max(getWidth(), getHeight())*0.9) / dividerRadius,
+    max: Math.round(Math.max(getWidth(), getHeight())*3) / dividerRadius,
 };
 
 // Fonction pour générer une vague d'ennemis, 10 par defaut, sinon n (parametre)
@@ -111,23 +111,27 @@ export function spawnEnemy(typeElement = 'enemy') {
     let damageEnemy;
     let radiusEnemy;
     let hMultiplier;
+    let maxD;
     if (typeElement == 'food') {
         speedEnemy = playerSpeed * 0.8;
         damageEnemy = 3;
         radiusEnemy = 14;
         hMultiplier = 1.3;
+        maxD = Math.round(Math.max(getWidth(), getHeight())*4.0) / dividerRadius
     }
     else if (typeElement == 'star'){
         speedEnemy = 1; // pas 0 pour les calculs de position
         damageEnemy = 0;
         radiusEnemy = 18;
         hMultiplier = 1;
+        maxD = Math.round(Math.max(getWidth(), getHeight())*4.0) / dividerRadius
     }
     else {
         speedEnemy = Math.max(0.3 * playerSpeed, Math.min(0.8 * playerSpeed, generateNormalRandom(0.5 * playerSpeed, 0.2 * playerSpeed)));  // Vitesse de déplacement
         damageEnemy = 1;
         radiusEnemy = 18
         hMultiplier = 1.3;
+        maxD = Math.round(Math.max(getWidth(), getHeight())*1.80) / dividerRadius
     }
 
     enemies.push({
@@ -142,7 +146,7 @@ export function spawnEnemy(typeElement = 'enemy') {
         radius: radiusEnemy * getScale(),  // Taille des ennemis
         heightMultiplier: hMultiplier,  // Multiplie la taille de l'ennemi
         speed: speedEnemy, // Vitesse de déplacement
-        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.80) / dividerRadius, // Distance maximale avant que l'ennemi ne disparaisse
+        maxDistance: maxD, // Distance maximale avant que l'ennemi ne disparaisse
         damage: damageEnemy,  // Dégâts infligés au joueur
         animationSpeed: 90,  // Vitesse de l'animation
         currentImage: 1,  // Image actuelle de l'ennemi
