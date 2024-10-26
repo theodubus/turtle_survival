@@ -59,8 +59,9 @@ export function waveEnemy(maxN = 125) {
 }
 
 export function spawnFood() {
-    let mean = 35 - 10 * gameDifficulty();
-    let stdDev = 5;
+    // let mean = 30 - 10 * gameDifficulty();
+    let mean = 1;
+    let stdDev = 0.5;//5;
     if (nextFood == undefined){
         nextFood = Date.now() + getNormalRandom(mean, stdDev) * 1000;
     }
@@ -72,8 +73,8 @@ export function spawnFood() {
 }
 
 export function spawnStar() {
-    let mean = 45 - 5 * gameDifficulty();
-    let stdDev = 5;
+    let mean = 40 - 5 * gameDifficulty();
+    let stdDev = 10;
     if (nextStar == undefined){
         nextStar = Date.now() + getNormalRandom(mean, stdDev) * 1000;
     }
@@ -141,7 +142,7 @@ export function spawnEnemy(typeElement = 'enemy') {
         radius: radiusEnemy * getScale(),  // Taille des ennemis
         heightMultiplier: hMultiplier,  // Multiplie la taille de l'ennemi
         speed: speedEnemy, // Vitesse de déplacement
-        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.20) / dividerRadius, // Distance maximale avant que l'ennemi ne disparaisse
+        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.80) / dividerRadius, // Distance maximale avant que l'ennemi ne disparaisse
         damage: damageEnemy,  // Dégâts infligés au joueur
         animationSpeed: 90,  // Vitesse de l'animation
         currentImage: 1,  // Image actuelle de l'ennemi
