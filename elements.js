@@ -1,4 +1,4 @@
-import { generateNormalRandom, getExponentialRandom, getRandomPointInCircle, getScale, isPhone } from './utils.js';
+import { generateNormalRandom, getNormalRandom, getRandomPointInCircle, getScale, isPhone } from './utils.js';
 import { ctx, getHeight, getWidth } from './canvas.js';
 import { player, eat, invinciblePlayer } from './player.js';
 import { world } from './world.js';
@@ -7,13 +7,12 @@ import { gameDifficulty } from "./game.js";
 
 // Tableau pour stocker les ennemis
 let enemies = [];
-let nextFood = Date.now() + getExponentialRandom(10) * 1000;
-let nextStar = Date.now() + getExponentialRandom(10) * 1000;
+let nextFood = undefined;
+let nextStar = undefined;
 let numStars = 0;
 let maxStars = 1;
 let numFood = 0;
-let maxFood = 5;
-let meanStarWait = 20;
+let maxFood = 3;
 let dividerRadius = 1;
 if (isPhone()){
     dividerRadius = 1.8;
@@ -41,8 +40,14 @@ export const enemySpawnInterval = 10000;
 
 // Rayon minimal et maximal autour du joueur où les ennemis peuvent apparaître
 const enemySpawnRadius = {
-    min: Math.round(Math.max(getWidth(), getHeight())*0.79) / dividerRadius,
-    max: Math.round(Math.max(getWidth(), getHeight())*0.83) / dividerRadius,
+    min: Math.round(Math.max(getWidth(), getHeight())*0.80) / dividerRadius,
+    max: Math.round(Math.max(getWidth(), getHeight())*1) / dividerRadius,
+};
+
+// Rayon minimal et maximal autour du joueur où les ennemis peuvent apparaître
+const elementSpawnRadius = {
+    min: Math.round(Math.max(getWidth(), getHeight())*0.90) / dividerRadius,
+    max: Math.round(Math.max(getWidth(), getHeight())*1.45) / dividerRadius,
 };
 
 // Fonction pour générer une vague d'ennemis, 10 par defaut, sinon n (parametre)
@@ -55,26 +60,28 @@ export function waveEnemy(maxN = 125) {
 }
 
 export function spawnFood() {
-    if (Date.now() > nextFood && numFood < maxFood) {
+    let mean = 35 - 10 * gameDifficulty();
+    let stdDev = 5;
+    if (nextFood == undefined){
+        nextFood = Date.now() + getNormalRandom(mean, stdDev) * 1000;
+    }
+    else if (Date.now() > nextFood && numFood < maxFood) {
         spawnEnemy('food');
         numFood += 1;
-        let lambda = 1/(3 + 1 * gameDifficulty()); // 3s puis converge vers 4s
-        nextFood = Date.now() + getExponentialRandom(lambda) * 1000;
+        nextFood = Date.now() + getNormalRandom(mean, stdDev) * 1000;
     }
 }
 
 export function spawnStar() {
-    if (Date.now() > nextStar && numStars < maxStars) {
+    let mean = 45 - 5 * gameDifficulty();
+    let stdDev = 5;
+    if (nextStar == undefined){
+        nextStar = Date.now() + getNormalRandom(mean, stdDev) * 1000;
+    }
+    else if (Date.now() > nextStar && numStars < maxStars) {
         spawnEnemy('star');
         numStars += 1;
-        let mean = meanStarWait;
-        let decrease = (2 - gameDifficulty())/2;
-        if (isPhone()){
-            decrease = (2 - gameDifficulty())/3;
-        }
-        meanStarWait = Math.max(1, meanStarWait * decrease); 
-        let lambda = 1/mean;
-        nextStar = Date.now() + Math.max(Math.min(getExponentialRandom(lambda), 25), 1) * 1000;
+        nextStar = Date.now() + getNormalRandom(mean, stdDev) * 1000;
     }
 }
 
@@ -86,7 +93,13 @@ export function spawnEnemy(typeElement = 'enemy') {
     }
 
     const angle = Math.random() * Math.PI * 2;  // Angle aléatoire
-    const distance = Math.random() * (enemySpawnRadius.max - enemySpawnRadius.min) + enemySpawnRadius.min;
+    let distance;
+    if (typeElement == 'enemy'){
+        distance = Math.random() * (enemySpawnRadius.max - enemySpawnRadius.min) + enemySpawnRadius.min;
+    }
+    else {
+        distance = Math.random() * (elementSpawnRadius.max - elementSpawnRadius.min) + elementSpawnRadius.min;
+    }
 
     // Coordonnées du nouvel ennemi (par rapport à la position du monde)
     const enemyX = player.x + world.x + Math.cos(angle) * distance;
@@ -129,7 +142,7 @@ export function spawnEnemy(typeElement = 'enemy') {
         radius: radiusEnemy * getScale(),  // Taille des ennemis
         heightMultiplier: hMultiplier,  // Multiplie la taille de l'ennemi
         speed: speedEnemy, // Vitesse de déplacement
-        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.20) / dividerRadius, // Distance maximale avant que l'ennemi ne disparaisse
+        maxDistance: Math.round(Math.max(getWidth(), getHeight())*1.80) / dividerRadius, // Distance maximale avant que l'ennemi ne disparaisse
         damage: damageEnemy,  // Dégâts infligés au joueur
         animationSpeed: 90,  // Vitesse de l'animation
         currentImage: 1,  // Image actuelle de l'ennemi
@@ -164,6 +177,151 @@ directions.forEach(direction => {
     }
 });
 
+export function drawArrows() {
+    enemies.forEach(enemy => {
+        
+        // déterminer si l'ennemi est dans le champ de vision du joueur, cad dans le canvas
+        let visible = true;
+        if (enemy.x - world.x > 0 && enemy.x - world.x < getWidth() && enemy.y - world.y > 0 && enemy.y - world.y < getHeight()){
+            visible = false;
+        }
+
+        let display = false;
+        if (enemy.type == 'food' || enemy.type == 'star'){
+            display = true;
+        }
+
+        if (display && visible){
+            // coordonnées de la droite entre l'ennemi et le joueur
+            let dx = player.x + world.x - enemy.x;
+            let dy = player.y + world.y - enemy.y;
+
+            let m = dy/dx;
+            let p = (enemy.y - world.y) - m * (enemy.x - world.x);
+
+            let x1 = (0 - p) / m;
+            let x2 = (getHeight() - p) / m;
+            let y1 = m * 0 + p;
+            let y2 = m * getWidth() + p;
+
+            x1 = Math.max(0, Math.min(getWidth(), x1));
+            x2 = Math.max(0, Math.min(getWidth(), x2));
+            y1 = Math.max(0, Math.min(getHeight(), y1));
+            y2 = Math.max(0, Math.min(getHeight(), y2));
+            
+            let dx1 = x1 - enemy.x + world.x;
+            let dy1 = y1 - enemy.y + world.y;
+            let dx2 = x2 - enemy.x + world.x;
+            let dy2 = y2 - enemy.y + world.y;
+
+            let d1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+            let d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+            let d3 = Math.sqrt(dx1 * dx1 + dy2 * dy2);
+            let d4 = Math.sqrt(dx2 * dx2 + dy1 * dy1);
+
+            let x, y;
+
+            if (Math.min(d1, d2, d3, d4) == d1){
+                x = x1;
+                y = y1;
+            }
+            else if (Math.min(d1, d2, d3, d4) == d2){
+                x = x2;
+                y = y2;
+            }
+            else if (Math.min(d1, d2, d3, d4) == d3){
+                x = x1;
+                y = y2;
+            }
+            else {
+                x = x2;
+                y = y1;
+            }
+
+            drawPin(ctx, x, y, dx, dy, enemy);
+
+        }
+    });
+}
+
+function drawPin(ctx, x, y, dx, dy, entity) {
+    const pinRadius = 21;         // Rayon du cercle pour le "pin"
+    const pinLength = pinRadius * 1.6;
+
+    // dark red semi-transparent
+    let color = "rgba(230, 150, 20, 0.4)";
+    let secondColor = "rgba(0, 0, 0, 0.2)";
+
+    // Calcule l'angle de la pointe pour pointer vers l'objet (à partir de dx, dy)
+    const angle = Math.atan2(dy, dx);
+
+    const tipAngle = Math.PI / 1.4;  // Angle de la pointe du "pin"
+
+    // Calcul des coordonnées pour l'extrémité du cercle
+    const circleX = x + pinLength * Math.cos(angle);
+    const circleY = y + pinLength * Math.sin(angle);
+
+    // Dessine la pointe du "pin" (un petit triangle pointant vers x, y)
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(
+        circleX + pinRadius * Math.cos(angle + tipAngle),
+        circleY + pinRadius * Math.sin(angle + tipAngle)
+    );
+    ctx.lineTo(
+        circleX + pinRadius * Math.cos(angle - tipAngle),
+        circleY + pinRadius * Math.sin(angle - tipAngle)
+    );
+    ctx.closePath();
+    ctx.fillStyle = color;  // Couleur de la pointe
+    ctx.fill();
+
+    // // Dessine le cercle
+    // ctx.beginPath();
+    // ctx.arc(circleX, circleY, pinRadius, 0, Math.PI * 2);
+    // ctx.fillStyle = color;  // Couleur du cercle
+    // ctx.fill();
+
+    // dessine le cercle sans la partie du triangle
+    ctx.beginPath();
+    ctx.arc(circleX, circleY, pinRadius, angle - tipAngle, angle + tipAngle, false);
+    ctx.fillStyle = color;  // Couleur transparente
+    ctx.fill();
+
+    // Dessine un plus petit cercle au centre du cercle
+    ctx.beginPath();
+    ctx.arc(circleX, circleY, pinRadius * 0.85, 0, Math.PI * 2);
+    ctx.fillStyle = secondColor;  // Couleur du cercle
+    ctx.fill();
+
+    let image;
+    if (entity.type == 'food'){
+        image = foodImages['b'][1];
+    }
+    else if (entity.type == 'star'){
+        image = starImage;
+    }
+
+    let scale = pinRadius * 1.2;
+    if (entity.heightMultiplier == 1){
+        scale = pinRadius * 1.4;
+    }
+    let height = entity.heightMultiplier*scale;
+    let width = scale;
+
+    // Dessine l'image au centre du cercle
+    ctx.drawImage(
+        image,
+        circleX - width / 2, // Position X (centre l'image)
+        circleY - height / 2, // Position Y (centre l'image)
+        width, // Largeur
+        height // Hauteur
+    );
+
+    
+}
+
+
 // Fonction pour dessiner les ennemis
 export function drawEnemies(direction = "below") {
     enemies.forEach(enemy => {
@@ -172,6 +330,12 @@ export function drawEnemies(direction = "below") {
         }
         if (direction == "below" && enemy.y + world.y < player.y + world.y) {
             return;  // Ne dessine pas les ennemis en dessous du joueur
+        }
+
+        let margin = 50;
+        // si l'ennemi n'est pas dans le champ de vision du joueur, on ne le dessine pas, on met une marge de 20px pour ne pas le dessiner trop tard
+        if (enemy.x - world.x < -margin || enemy.x - world.x > getWidth() + margin || enemy.y - world.y < -margin || enemy.y - world.y > getHeight() + margin){
+            return;
         }
 
         // Ajustez la taille du cœur en fonction du rayon de l'ennemi
@@ -244,7 +408,6 @@ export function updateEnemies() {
                 }
                 if (enemy.type == 'star'){
                     invinciblePlayer(enemy.invincibleDuration);
-                    meanStarWait = 25 * (4-gameDifficulty())/4;
                     numStars -= 1;
                 }
                 if (enemy.type == 'enemy'){
@@ -261,7 +424,6 @@ export function updateEnemies() {
 
             if(enemy.type == 'star'){
                 invinciblePlayer(enemy.invincibleDuration);
-                meanStarWait = 25 * (4-gameDifficulty())/4;
                 numStars -= 1;
                 return false;
             }

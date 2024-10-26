@@ -25,6 +25,13 @@ export function getExponentialRandom(lambda) {
     return -Math.log(1 - U) / lambda;
 }
 
+export function getNormalRandom(mean, stdDev) {
+    let U1 = Math.random();
+    let U2 = Math.random();
+    let Z0 = Math.sqrt(-2.0 * Math.log(U1)) * Math.cos(2.0 * Math.PI * U2);
+    return Z0 * stdDev + mean;
+}
+
 export function getRandomPointInCircle(x, y, r) {
     // Générer un angle aléatoire entre 0 et 2 * pi
     let theta = Math.random() * 2 * Math.PI;
