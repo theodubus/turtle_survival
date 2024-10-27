@@ -34,7 +34,7 @@ export function updateEnemiesPosition(dx, dy) {
 }
 
 // Intervalle de temps pour ajouter une vague d'ennemis (en millisecondes)
-export const enemySpawnInterval = 7000;
+export const enemySpawnInterval = 8500;
 
 
 // Rayon minimal et maximal autour du joueur où les ennemis peuvent apparaître
@@ -50,7 +50,7 @@ const elementSpawnRadius = {
 };
 
 // Fonction pour générer une vague d'ennemis, 10 par defaut, sinon n (parametre)
-export function waveEnemy(maxN = 85) {
+export function waveEnemy(maxN = 115) {
     let n = Math.ceil(maxN * gameDifficulty());
     for (let i = 0; i < n; i++) {
         // wait 0.1 second before spawning the next enemy
@@ -299,7 +299,7 @@ function drawPin(ctx, x, y, dx, dy, entity) {
 
     let image;
     if (entity.type == 'food'){
-        image = foodImages['b'][1];
+        image = foodImages['b'][0];
     }
     else if (entity.type == 'star'){
         image = starImage;
