@@ -1,6 +1,7 @@
 import { player } from './player.js';
 import { updateWorldPosition } from './world.js';
 import { getDirection, getAngle } from './joystick.js';
+import { getDeltaTime } from "./game.js";
 
 // Gestion des touches enfoncées
 let keysPressed = {};
@@ -42,7 +43,7 @@ export function updateMovement() {
         }
     }
 
-    updateWorldPosition(dx, dy);
+    updateWorldPosition(dx * getDeltaTime(), dy * getDeltaTime());
 
 }
 

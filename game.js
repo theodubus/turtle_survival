@@ -38,7 +38,20 @@ export function restartGame() {
     location.reload();
 }
 
+let lastFrameTime = Date.now();
+export let deltaTime = 0;
+export function getDeltaTime() {
+    return deltaTime;
+}
+
+
 function gameLoop() {
+
+    // Calcul du temps écoulé depuis la dernière frame
+    const currentTime = Date.now();
+    deltaTime = (currentTime - lastFrameTime) / 1000;
+    lastFrameTime = currentTime;
+
     clearCanvas();            // Efface le canvas
     drawWorld();              // Dessine le monde (la grille)
     drawEnemies("above");     // Dessine les ennemis venant du haut
@@ -67,7 +80,7 @@ function gameLoop() {
     // // pause the game for 50 milliseconds
     // setTimeout(() => {
     //     requestAnimationFrame(gameLoop);
-    // }, 15);
+    // }, 20);
 
     requestAnimationFrame(gameLoop);  // Boucle continue
 }

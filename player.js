@@ -2,10 +2,10 @@ import { ctx, canvas, getHeight, getWidth } from "./canvas.js";
 import { isPhone, getScale } from './utils.js';
 import { elapsedTime } from './game.js';
 
-let speedPlayer = 2
-if (isPhone()) {
-    speedPlayer = 0.75 // Vitesse du joueur sur téléphone
-}
+let speedPlayer = 80
+// if (isPhone()) {
+//     speedPlayer = 0.75 // Vitesse du joueur sur téléphone
+// }
 
 // Configuration du joueur (toujours au centre)
 export let player = {

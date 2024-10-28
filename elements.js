@@ -2,7 +2,7 @@ import { generateNormalRandom, getNormalRandom, getRandomPointInCircle, getScale
 import { ctx, getHeight, getWidth } from './canvas.js';
 import { player, eat, invinciblePlayer, drawHealthBar } from './player.js';
 import { world } from './world.js';
-import { getGameRunning, startGame, restartGame, setStartTime, gameDifficulty } from './game.js';
+import { getGameRunning, startGame, restartGame, setStartTime, gameDifficulty, getDeltaTime } from './game.js';
 
 // Tableau pour stocker les ennemis
 let enemies = [];
@@ -466,8 +466,8 @@ export function updateEnemies() {
                     }
                 }
                 else {
-                    const moveX = (dx / distance) * speedEnemy;
-                    const moveY = (dy / distance) * speedEnemy;
+                    const moveX = (dx / distance) * speedEnemy * getDeltaTime();
+                    const moveY = (dy / distance) * speedEnemy * getDeltaTime();
                     enemy.x += moveX;
                     enemy.y += moveY;
                 }
@@ -477,8 +477,8 @@ export function updateEnemies() {
             else if (enemy.type == 'enemy'){
                 let speedEnemy = enemy.speed * (gameDifficulty() + 2) / 3;
                 // Normalisation du vecteur directionnel
-                const moveX = (dx / distance) * speedEnemy;
-                const moveY = (dy / distance) * speedEnemy;
+                const moveX = (dx / distance) * speedEnemy * getDeltaTime();
+                const moveY = (dy / distance) * speedEnemy * getDeltaTime();
 
                 // Mise à jour de la position de l'ennemi
                 enemy.x += moveX;
