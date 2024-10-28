@@ -248,11 +248,10 @@ export function drawArrows() {
 }
 
 function drawPin(ctx, x, y, dx, dy, entity) {
-    const pinRadius = 21;         // Rayon du cercle pour le "pin"
+    const pinRadius = 23;         // Rayon du cercle pour le "pin"
     const pinLength = pinRadius * 1.6;
 
-    // dark red semi-transparent
-    let color = "rgba(230, 150, 20, 0.4)";
+    let color = "rgba(255, 255, 255, 0.6)"; // blanc   
     let secondColor = "rgba(0, 0, 0, 0.2)";
 
     // Calcule l'angle de la pointe pour pointer vers l'objet (à partir de dx, dy)

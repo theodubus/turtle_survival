@@ -9,7 +9,7 @@ export let world = {
 
 // Charger l'image de fond
 const backgroundImage = new Image();
-backgroundImage.src = 'assets/ground.jpg';  // Chemin vers votre image de fond
+backgroundImage.src = 'assets/ground.jpeg';  // Chemin vers votre image de fond
 
 
 // Fonction pour dessiner l'arrière-plan (ici on dessine une grille simple)
