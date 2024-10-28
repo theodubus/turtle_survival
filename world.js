@@ -64,9 +64,15 @@ export function drawWorld() {
     const xOffset = x % scaledWidth;
     const yOffset = y % scaledHeight;
 
+    let nb_y = Math.ceil(canvasHeight / scaledHeight);
+    let nb_x = Math.ceil(canvasWidth / scaledWidth);
+
+    nb_x = 2 + Math.ceil(nb_x / 2) * 2;
+    nb_y = 2 + Math.ceil(nb_y / 2) * 2;
+
     // Dessiner les 9 images pour remplir la grille infinie
-    for (let i = -1; i <= 1; i++) {
-        for (let j = -1; j <= 1; j++) {
+    for (let i = -nb_x; i <= nb_x; i++) {
+        for (let j = -nb_y; j <= nb_y; j++) {
             ctx.drawImage(
                 backgroundImage,
                 xOffset + i * scaledWidth,

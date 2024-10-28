@@ -188,5 +188,5 @@ export function updatePlayer(){
 }
 
 export function getScore() {
-    return Math.round((Math.floor(elapsedTime) * 0.5 + player.enemyKillCount) * 2);
+    return Math.round((Math.floor(elapsedTime) * 5 + player.enemyKillCount * 2));
 }
