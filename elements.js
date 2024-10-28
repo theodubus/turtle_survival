@@ -248,7 +248,10 @@ export function drawArrows() {
 }
 
 function drawPin(ctx, x, y, dx, dy, entity) {
-    const pinRadius = 23;         // Rayon du cercle pour le "pin"
+    let pinRadius = 21;         // Rayon du cercle pour le "pin"
+    if (!isPhone()){
+        pinRadius = 23;
+    }
     const pinLength = pinRadius * 1.6;
 
     let color = "rgba(255, 255, 255, 0.6)"; // blanc   
