@@ -1,4 +1,4 @@
-import { player } from './player.js';
+import { player, getGhostStatus } from './player.js';
 import { updateWorldPosition } from './world.js';
 import { getDirection, getAngle } from './joystick.js';
 import { getDeltaTime } from "./game.js";
@@ -11,9 +11,16 @@ export function updateMovement() {
     let dx = 0;
     let dy = 0;
     let multiplicator = 1;
-    if (player.InvincibleUntil > Date.now()){
-        multiplicator = 2;
+    if (getGhostStatus()){
+        multiplicator = 1.3;
+        if (player.speedUntil > Date.now()){
+            multiplicator = 2.8;
+        }
     }
+    else if (player.InvincibleUntil > Date.now()){
+        multiplicator = 2.8;
+    }
+    
 
     const angle = getAngle();
 
@@ -97,7 +104,7 @@ export function updateDirection() {
 }
 
 export function updateStatic() {
-    if (!player.eating){
+    if (!player.eating && !getGhostStatus()){
         if (!player.currentImage == 0) {
             if (!getDirection() && !keysPressed['ArrowRight'] && !keysPressed['ArrowLeft'] && !keysPressed['ArrowUp'] && !keysPressed['ArrowDown'] && !keysPressed['d'] && !keysPressed['q'] && !keysPressed['z'] && !keysPressed['s']) {
                 player.currentImage = 0;

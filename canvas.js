@@ -1,5 +1,5 @@
 import { elapsedTime } from './game.js';
-import { player, getScore } from './player.js';
+import { player, getScore, getGhostStatus } from './player.js';
 
 // Initialisation du canvas et du contexte de dessin
 export const canvas = document.getElementById('gameCanvas');
@@ -70,6 +70,9 @@ export function drawTimer() {
     ctx.fillStyle = "white";
     ctx.fillText(textScore, rectX + rectWidth / 2, rectY + rectHeight / 2 + 7); // Centrer le texte
 
+    if (getGhostStatus()){
+        ctx.fillStyle = "red";
+    }
     ctx.fillText(text, rectX2 + rectWidth2 / 2, rectY2 + rectHeight / 2 + 7); // Centrer le texte
     
     // ctx.fillText(textScore, rectX + rectWidth / 2, rectY + rectHeight / 2 + 3 + rectHeight); // Centrer le texte

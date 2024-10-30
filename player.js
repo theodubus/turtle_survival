@@ -1,8 +1,12 @@
 import { ctx, canvas, getHeight, getWidth } from "./canvas.js";
 import { isPhone, getScale } from './utils.js';
-import { elapsedTime } from './game.js';
+import { elapsedTime, addDeltaTimeDifficulty, gameDifficulty } from './game.js';
+import { changeBackgroundImage } from "./world.js";
+import { emptyProjecteurs } from "./projecteur.js";
+import { filterEnemies, resetStar, resetGhost, deleteTimeouts } from "./elements.js";
 
-let speedPlayer = 80
+let speedPlayer = 85;
+let timeGhost = 0;
 // if (isPhone()) {
 //     speedPlayer = 0.75 // Vitesse du joueur sur téléphone
 // }
@@ -16,48 +20,84 @@ export let player = {
     speed: speedPlayer,                // Vitesse de déplacement
     hp: 10,                   // points de vie
     maxHp: 10,                // points de vie max
+    ghostHp: 10,                   // points de vie
+    maxGhostHp: 10,                // points de vie max
     currentImage : 0,        // Image actuelle du joueur
     lastChange: 0,           // Dernier changement d'image
     direction: 'b',      // Dernière direction du joueur
     animationSpeed: 35,     // Vitesse de l'animation
     baseAnimationSpeed : 35,
     bouleAnimationSpeed : 70,
+    ghostAnimationSpeed : 110,
+    speedUntil : 0,
     eating : false,
     pendingHp : 0,
     InvincibleUntil : 0,
     enemyKillCount: 0,
+    isGhost: false,
 };
 
 // Fonction pour dessiner la barre de vie en haut à gauche
 export function drawHealthBar() {
-    if (player.InvincibleUntil < Date.now()){
-    let barWidth = player.radius*1.1;
-    const barHeight = 5;
-    const barPadding = 3;
-    const barX = player.x - barWidth / 2;
-    const barY = player.y + player.radius + barHeight + barPadding;
-    const barInnerWidth = (player.hp / player.maxHp) * barWidth;
+    if (player.InvincibleUntil < Date.now() && !getGhostStatus()){
+        let barWidth = player.radius*1.1;
+        const barHeight = 5;
+        let barPadding = 3;
+        const barX = player.x - barWidth / 2;
+        const barY = player.y + player.radius + barHeight + barPadding;
+        const barInnerWidth = (player.hp / player.maxHp) * barWidth;
 
-    // gris foncé
-    ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
-    ctx.fillRect(barX, barY, barWidth, barHeight);
-    if(player.hp > 0){
-    ctx.fillStyle = "rgb(0, 255, 0)";
-    ctx.fillRect(barX, barY, barInnerWidth, barHeight);
-    }
+        // gris foncé
+        ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+        if(player.hp > 0){
+            ctx.fillStyle = "rgb(0, 255, 0)";
+            ctx.fillRect(barX, barY, barInnerWidth, barHeight);
+        }
     }
 }
 
 // Fonction pour dessiner la barre de vie en haut à gauche
-export function drawInvincibilityBar() {
-    if (player.InvincibleUntil > Date.now()){
-        let barWidth = player.radius * 1.1;
+export function drawGhostBar() {
+    if (getGhostStatus()){
+        let barWidth = player.radius*1.1;
         const barHeight = 5;
-        const barPadding = 3;
+        const barPadding = 8;
         const barX = player.x - barWidth / 2;
         const barY = player.y + player.radius + barHeight + barPadding;
-        const timeRemaining = player.InvincibleUntil - Date.now();
-        const barInnerWidth = (timeRemaining / 10000) * barWidth;
+        const barInnerWidth = (player.ghostHp / player.maxGhostHp) * barWidth;
+
+        // gris foncé
+        ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+        if(player.ghostHp > 0){
+            ctx.fillStyle = "rgb(50, 0, 205)";
+            ctx.fillRect(barX, barY, barInnerWidth, barHeight);
+        }
+    }
+}
+
+
+// Fonction pour dessiner la barre de vie en haut à gauche
+export function drawInvincibilityBar() {
+    if (player.InvincibleUntil > Date.now() || (getGhostStatus() && player.speedUntil > Date.now())){
+        let barWidth = player.radius * 1.1;
+        const barHeight = 5;
+        let barPadding = 3;
+        if (getGhostStatus()){
+            barPadding = 8+10;
+        }
+        const barX = player.x - barWidth / 2;
+        const barY = player.y + player.radius + barHeight + barPadding;
+
+        let timeRemaining = player.InvincibleUntil - Date.now();
+        let maxTime = 10;
+        if (getGhostStatus()){
+            timeRemaining = player.speedUntil - Date.now();
+            maxTime = 15;
+        }
+
+        const barInnerWidth = (timeRemaining / (maxTime*1000)) * barWidth;
 
         // gris foncé
         ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
@@ -73,16 +113,19 @@ const directions = ['h', 'hg', 'hd', 'b', 'bg', 'bd', 'g', 'd'];
 const numImages = 17; // Nombre d'images par direction (de 0 à 16)
 const numFoodImages = 19; // Nombre d'images pour manger (de 1 à 19)
 const numBouleImages = 6;
+const numGhostImages = 4;
 
 // Objet pour stocker les images par direction
 const playerImages = {};
 const bouleImages = {};
 const eatingImages = [];
+const ghostImages = {};
 
 // Charger les images pour chaque direction
 directions.forEach(direction => {
     playerImages[direction] = []; // Créer un tableau pour chaque direction
     bouleImages[direction] = []; // Créer un tableau pour chaque direction
+    ghostImages[direction] = []; // Créer un tableau pour chaque direction
     for (let i = 0; i < numImages; i++) {
         const img = new Image();
         img.src = `assets/player/${direction}_${i}.png`; // Nom du fichier d'image
@@ -92,6 +135,12 @@ directions.forEach(direction => {
             const imgBoule = new Image();
             imgBoule.src = `assets/boule/boule_${direction}_${i+1}.png`; // Nom du fichier d'image
             bouleImages[direction].push(imgBoule); // Ajouter l'image au tableau de la direction
+        }
+
+        if (i < numGhostImages){
+            const imgGhost = new Image();
+            imgGhost.src = `assets/fantome/${direction}_${i+1}.png`; // Nom du fichier d'image
+            ghostImages[direction].push(imgGhost); // Ajouter l'image au tableau de la direction
         }
     }
 });
@@ -106,7 +155,10 @@ for (let i = 1; i < numFoodImages + 1; i++) {
 
 // Fonction pour dessiner le joueur
 export function drawPlayer() {
-    const scale = player.radius * 2; // Multiplier par 2 pour obtenir le diamètre
+    let scale = player.radius * 2; // Multiplier par 2 pour obtenir le diamètre
+    if (getGhostStatus()){
+        scale *= 1.05;
+    }
     const width = scale;  // Largeur du joueur
     const height = scale; // Hauteur du joueur
 
@@ -114,6 +166,9 @@ export function drawPlayer() {
 
     if (player.eating){
         imageDisplay = eatingImages[player.currentImage];
+    }
+    else if (getGhostStatus()){
+        imageDisplay = ghostImages[player.direction][player.currentImage];
     }
     else if (player.InvincibleUntil > Date.now()){
         imageDisplay = bouleImages[player.direction][player.currentImage];
@@ -135,7 +190,11 @@ export function drawPlayer() {
     const timeSinceChange = Date.now() - player.lastChange;
     if (timeSinceChange > player.animationSpeed) {
         if (!player.eating){
-            if (player.InvincibleUntil > Date.now()){
+            if (getGhostStatus()){
+                player.currentImage = (player.currentImage + 1) % numGhostImages;
+                player.lastChange = Date.now();
+            }
+            else if (player.InvincibleUntil > Date.now()){
                 player.currentImage = (player.currentImage + 1) % numBouleImages;
                 player.lastChange = Date.now();
             }
@@ -182,11 +241,39 @@ export function invinciblePlayer(duration){
 }
 
 export function updatePlayer(){
-    if (player.InvincibleUntil < Date.now()){
+    if (player.InvincibleUntil < Date.now() && !getGhostStatus()){
         player.animationSpeed = player.baseAnimationSpeed;
     }
 }
 
 export function getScore() {
     return Math.round((Math.floor(elapsedTime) * 5 + player.enemyKillCount * 2));
+}
+
+
+export function activateGhost(){
+    player.isGhost = true;
+    changeBackgroundImage('assets/stone.jpeg');
+    player.currentImage = 0;
+    player.ghostHp = player.maxGhostHp;
+    player.animationSpeed = player.ghostAnimationSpeed;
+    player.InvincibleUntil = 0
+    resetStar();
+    timeGhost = Date.now();
+}
+
+export function deactivateGhost(){
+    player.isGhost = false;
+    changeBackgroundImage('assets/ground.jpeg');
+    player.animationSpeed = player.baseAnimationSpeed;
+    emptyProjecteurs();
+    filterEnemies(0);
+    resetGhost();
+    addDeltaTimeDifficulty((Date.now()-timeGhost));
+    // invinciblePlayer(10);
+    deleteTimeouts();
+}
+
+export function getGhostStatus(){
+    return player.isGhost;
 }

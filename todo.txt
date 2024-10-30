@@ -1,0 +1,23 @@
+    -> tirer boule feu
+    -> augmenter max hp
+    ;; -> augmenter vitesse (jusqu'a max vitesse)
+    -> faire passer le temps 2 fois plus vite
+    -> tuer un ennemi fait gagner des points
+
+    ennemis
+    -> augmenter degats
+    -> générés plus frequemment
+    -> pas one shot
+
+faire plusieurs types d'ennemis
+penser a supprimer les objets qui sortent de l'écran (projectiles, bonus, ennemis)
+
+
+coffre avec indication fleche
+mario meurt animation
+
+
+-----
+
+animation mort luigi mario
+aspire ? (boo toune sur lui-même)

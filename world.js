@@ -1,5 +1,6 @@
 import { ctx, getHeight, getWidth } from './canvas.js';
 import { updateEnemiesPosition } from './elements.js';
+import { updateTargets } from "./projecteur.js";
 
 // Coordonnées du monde (représente le déplacement dans l'aire infinie)
 export let world = {
@@ -8,9 +9,12 @@ export let world = {
 };
 
 // Charger l'image de fond
-const backgroundImage = new Image();
+export let backgroundImage = new Image();
 backgroundImage.src = 'assets/ground.jpeg';  // Chemin vers votre image de fond
 
+export function changeBackgroundImage(newImage) {
+    backgroundImage.src = newImage;
+}
 
 // // Fonction pour dessiner l'arrière-plan (ici on dessine une grille simple)
 // export function drawWorld() {
@@ -38,6 +42,27 @@ backgroundImage.src = 'assets/ground.jpeg';  // Chemin vers votre image de fond
 //     //     }
 //     // }
 // }
+
+export function createRadialGradient() {
+    // Coordonnées du centre du canvas
+    const centerX = getWidth() / 2;
+    const centerY = getHeight() / 2;
+
+    // Rayon du centre et rayon du bord pour le dégradé
+    const innerRadius = 0;
+    const outerRadius = Math.max(getWidth(), getHeight()) / 2;
+
+    // Crée un dégradé radial
+    const gradient = ctx.createRadialGradient(centerX, centerY, innerRadius, centerX, centerY, outerRadius);
+
+    // Définition des couleurs : totalement transparent au centre, noir semi-transparent sur les bords
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');  // Centre transparent
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0.75)'); // Bords semi-transparents
+
+    // Applique le dégradé pour remplir tout le canvas
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, getWidth(), getHeight());
+}
 
 
 // Fonction pour dessiner l'arrière-plan sans déformer l'image
@@ -82,6 +107,7 @@ export function drawWorld() {
             );
         }
     }
+
 }
 
 
@@ -93,4 +119,5 @@ export function updateWorldPosition(dx, dy) {
 
     // Met à jour aussi la position des ennemis
     updateEnemiesPosition(dx, dy);
+    updateTargets(dx, dy);
 }
