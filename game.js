@@ -117,7 +117,7 @@ function gameLoop() {
         }
         if (Date.now() > nextProjecteur) {
             addProjecteur();
-            nextProjecteur = Date.now() + generateNormalRandom(6000, 1000);
+            nextProjecteur = Date.now() + generateNormalRandom(8000, 1000);
         }
     }
 

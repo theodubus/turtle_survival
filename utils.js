@@ -1,3 +1,5 @@
+import { getSettings } from "./settings.js";
+
 export function generateNormalRandom(mean, stdDev) {
     let u1 = Math.random(); // Un nombre aléatoire entre 0 et 1
     let u2 = Math.random(); // Un autre nombre aléatoire entre 0 et 1
@@ -48,9 +50,9 @@ export function getRandomPointInCircle(x, y, r) {
 
 export function getScale(){
     if (isPhone()){
-        return 0.75;
+        return getSettings().phoneScale;
     }
-    return 1;
+    return getSettings().desktopScale;
 }
 
 

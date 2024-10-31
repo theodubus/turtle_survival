@@ -1,5 +1,6 @@
 import { elapsedTime } from './game.js';
 import { player, getScore, getGhostStatus } from './player.js';
+import { getSettings } from './settings.js';
 
 // Initialisation du canvas et du contexte de dessin
 export const canvas = document.getElementById('gameCanvas');
@@ -40,7 +41,7 @@ export function drawTimer() {
     text = `${textMin}:${textSec}`;
     
     const textScore = `Score : ${getScore()}`;
-    ctx.font = "20px Arial";
+    ctx.font = getSettings().font;
     ctx.fillStyle = "black";
     ctx.textAlign = "center"; // Changer l'alignement du texte au centre
 

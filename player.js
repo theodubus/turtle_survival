@@ -4,31 +4,31 @@ import { elapsedTime, addDeltaTimeDifficulty, gameDifficulty } from './game.js';
 import { changeBackgroundImage } from "./world.js";
 import { emptyProjecteurs } from "./projecteur.js";
 import { filterEnemies, resetStar, resetGhost, deleteTimeouts } from "./elements.js";
+import { getSettings } from './settings.js';
 
-let speedPlayer = 85;
+let speedPlayer = getSettings().player.desktopSpeed;
 let timeGhost = 0;
-// if (isPhone()) {
-//     speedPlayer = 0.75 // Vitesse du joueur sur téléphone
-// }
+if (isPhone()) {
+    speedPlayer = getSettings().player.phoneSpeed;
+}
 
 // Configuration du joueur (toujours au centre)
 export let player = {
     x: getWidth() / 2,    // Le joueur reste toujours au centre du canvas
     y: getHeight() / 2,
-    radius: 30 * getScale(),             // Taille du cercle
-    color: "blue",          // Couleur du personnage
+    radius: getSettings().player.radius * getScale(),             // Taille du cercle
     speed: speedPlayer,                // Vitesse de déplacement
-    hp: 10,                   // points de vie
-    maxHp: 10,                // points de vie max
-    ghostHp: 10,                   // points de vie
-    maxGhostHp: 10,                // points de vie max
+    hp: getSettings().player.maxHp,                   // points de vie
+    maxHp: getSettings().player.maxHp,                // points de vie max
+    ghostHp: getSettings().player.maxGhostHp,                   // points de vie
+    maxGhostHp: getSettings().player.maxGhostHp,                // points de vie max
     currentImage : 0,        // Image actuelle du joueur
     lastChange: 0,           // Dernier changement d'image
     direction: 'b',      // Dernière direction du joueur
-    animationSpeed: 35,     // Vitesse de l'animation
-    baseAnimationSpeed : 35,
-    bouleAnimationSpeed : 70,
-    ghostAnimationSpeed : 110,
+    animationSpeed: getSettings().player.baseAnimationSpeed, // Vitesse de l'animation
+    baseAnimationSpeed : getSettings().player.baseAnimationSpeed,
+    bouleAnimationSpeed : getSettings().player.bouleAnimationSpeed,
+    ghostAnimationSpeed : getSettings().player.ghostAnimationSpeed,
     speedUntil : 0,
     eating : false,
     pendingHp : 0,
@@ -157,8 +157,9 @@ for (let i = 1; i < numFoodImages + 1; i++) {
 export function drawPlayer() {
     let scale = player.radius * 2; // Multiplier par 2 pour obtenir le diamètre
     if (getGhostStatus()){
-        scale *= 1.05;
+        scale *= getSettings().player.ghostScaleMultiplier;
     }
+    
     const width = scale;  // Largeur du joueur
     const height = scale; // Hauteur du joueur
 
@@ -247,7 +248,9 @@ export function updatePlayer(){
 }
 
 export function getScore() {
-    return Math.round((Math.floor(elapsedTime) * 5 + player.enemyKillCount * 2));
+    let timeFactor = getSettings().score.timeFactor;
+    let killCountFactor = getSettings().score.killCountFactor;
+    return Math.round((Math.floor(elapsedTime) * timeFactor + player.enemyKillCount * killCountFactor));
 }
 
 
@@ -267,10 +270,9 @@ export function deactivateGhost(){
     changeBackgroundImage('assets/ground.jpeg');
     player.animationSpeed = player.baseAnimationSpeed;
     emptyProjecteurs();
-    filterEnemies(0);
+    filterEnemies(0.1);
     resetGhost();
     addDeltaTimeDifficulty((Date.now()-timeGhost));
-    // invinciblePlayer(10);
     deleteTimeouts();
 }
 

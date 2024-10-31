@@ -3,6 +3,7 @@ import { ctx, getHeight, getWidth } from './canvas.js';
 import { player, eat, invinciblePlayer, drawHealthBar, getGhostStatus, activateGhost, deactivateGhost } from './player.js';
 import { world } from './world.js';
 import { getGameRunning, startGame, restartGame, setStartTime, gameDifficulty, getDeltaTime } from './game.js';
+import { getSettings } from './settings.js';
 
 // Tableau pour stocker les ennemis
 let enemies = [];
@@ -11,14 +12,16 @@ let nextFood = undefined;
 let nextStar = undefined;
 let nextGhost = undefined;
 let numStars = 0;
-let maxStars = 1;
+let maxStars = getSettings().entities.star.max;
 let numGhost = 0;
-let maxGhost = 1;
+let maxGhost = getSettings().entities.ghost.max;
+let firstGhost = 1;
 let numFood = 0;
-let maxFood = 3;
-let dividerRadius = 1;
+let maxFood = getSettings().entities.food.max;
+
+let dividerRadius = getSettings().destopDividerRadius;
 if (isPhone()){
-    dividerRadius = 1.8;
+    dividerRadius = getSettings().phoneDividerRadius;
 }
 
 export function getEntities(){
@@ -43,7 +46,7 @@ export function updateEnemiesPosition(dx, dy) {
 }
 
 // Intervalle de temps pour ajouter une vague d'ennemis (en millisecondes)
-export const enemySpawnInterval = 8500;
+export const enemySpawnInterval = getSettings().entities.enemySpawnInterval;
 
 
 // Rayon minimal et maximal autour du joueur où les ennemis peuvent apparaître
@@ -70,10 +73,12 @@ export function deleteTimeouts(){
 }
 
 // Fonction pour générer une vague d'ennemis, 10 par defaut, sinon n (parametre)
-export function waveEnemy(maxN = 100) {
+export function waveEnemy() {
+    let maxN = getSettings().entities.maxEnemiesPerWave;
+    
     let n = Math.ceil(maxN * gameDifficulty());
     if (getGhostStatus()){
-        n *= 4;
+        n *= getSettings().entities.ghostMultiplier;
     }
     for (let i = 0; i < n; i++) {
         // wait 0.1 second before spawning the next enemy
@@ -82,8 +87,10 @@ export function waveEnemy(maxN = 100) {
 }
 
 export function spawnFood() {
-    let mean = 30 - 10 * gameDifficulty();
-    let stdDev = 5;
+    let mean = getSettings().entities.food.meanSpawnRate;
+    mean -= getSettings().entities.food.meanSpawnRateReduction * gameDifficulty();
+    let stdDev = getSettings().entities.food.stdSpawnRate;
+
     if (nextFood == undefined){
         nextFood = Date.now() + getNormalRandom(mean, stdDev) * 1000;
     }
@@ -95,14 +102,18 @@ export function spawnFood() {
 }
 
 export function resetGhost() {
+    firstGhost = 0;
     nextGhost = undefined;
 }
 
 export function spawnGhost() {
-    let mean = 60 - 15 * gameDifficulty();
-    let stdDev = 7.5;
+    let mean = getSettings().entities.ghost.meanSpawnRate;
+    mean -= getSettings().entities.ghost.meanSpawnRateReduction * gameDifficulty();
+    mean += getSettings().entities.ghost.firstSpawnAddition * firstGhost;
+    let stdDev = getSettings().entities.ghost.stdSpawnRate;
+
     if (nextGhost == undefined){
-        nextGhost = Date.now() + getNormalRandom(90, 10) * 1000;
+        nextGhost = Date.now() + getNormalRandom(mean, stdDev) * 1000;
     }
     else if (Date.now() > nextGhost && numGhost < maxGhost) {
         if (getGhostStatus()){
@@ -115,17 +126,20 @@ export function spawnGhost() {
 }
 
 export function spawnStar() {
-    let mean = 30 - 5 * gameDifficulty();
-    let stdDev = 5;
+    let mean = getSettings().entities.star.meanSpawnRate;
+    mean -= getSettings().entities.star.meanSpawnRateReduction * gameDifficulty();
+    let stdDev = getSettings().entities.star.stdSpawnRate;
+
     let position = undefined; 
     if (getGhostStatus()){
-        mean = 45;
+        mean = getSettings().entities.star.meanGhostSpawnRate;
     }
     if (nextStar == undefined){
         nextStar = Date.now() + getNormalRandom(mean, stdDev) * 1000;
         if (getGhostStatus()){
             nextStar = Date.now();
-            position = [player.x + world.x, player.y + world.y + 150];
+            let distanceStar = getSettings().entities.star.ghostInitStarDistance;
+            position = [player.x + world.x, player.y + world.y + distanceStar];
             spawnEnemy('star', position);
             numStars += 1;
             nextStar = Date.now() + getNormalRandom(mean, stdDev) * 1000;
@@ -133,7 +147,8 @@ export function spawnStar() {
     }
     else if (player.InvincibleUntil > Date.now() && numStars < maxStars){
         let delta = Math.abs(nextStar - Date.now());
-        if (delta < 10000 || nextStar < Date.now()){
+        let minimumWaitTime = getSettings().entities.star.minimumWaitTime;
+        if (delta < minimumWaitTime || nextStar < Date.now()){
             nextStar = Math.max(nextStar, Date.now()) + getNormalRandom(mean/2, stdDev/2) * 1000;
         }
     }
@@ -194,35 +209,48 @@ export function spawnEnemy(typeElement = 'enemy', position = undefined) {
     let radiusEnemy;
     let hMultiplier;
     let maxD;
-    let animSpeed = 90;
+    let animSpeed;
+    let maxMult;
     if (typeElement == 'food') {
-        speedEnemy = playerSpeed * 0.8;
-        damageEnemy = 3;
-        radiusEnemy = 15;
-        hMultiplier = 1.2;
-        maxD = Math.round(Math.max(getWidth(), getHeight())*3.0) / dividerRadius
+        speedEnemy = playerSpeed * getSettings().entities.food.playerSpeedRatio;
+        damageEnemy = getSettings().entities.food.damage;
+        radiusEnemy = getSettings().entities.food.radius;
+        hMultiplier = getSettings().entities.food.heightMultiplier;
+        animSpeed = getSettings().entities.food.animationSpeed;
+        maxMult = getSettings().entities.food.maxDistance;
+        maxD = Math.round(Math.max(getWidth(), getHeight())*maxMult) / dividerRadius
     }
     else if (typeElement == 'star'){
-        speedEnemy = 1; // pas 0 pour les calculs de position
-        damageEnemy = 0;
-        radiusEnemy = 18;
-        hMultiplier = 1;
-        maxD = Math.round(Math.max(getWidth(), getHeight())*3.0) / dividerRadius
+        speedEnemy = getSettings().entities.star.speed;
+        damageEnemy = getSettings().entities.star.damage;
+        radiusEnemy = getSettings().entities.star.radius;
+        hMultiplier = getSettings().entities.star.heightMultiplier;
+        animSpeed = getSettings().entities.star.animationSpeed;
+        maxMult = getSettings().entities.star.maxDistance;
+        maxD = Math.round(Math.max(getWidth(), getHeight())*maxMult) / dividerRadius
     }
     else if (typeElement == 'ghost'){
-        speedEnemy = playerSpeed * 1.15;
-        damageEnemy = 0;
-        radiusEnemy = 20;
-        hMultiplier = 1;
-        animSpeed = 110;
-        maxD = Math.round(Math.max(getWidth(), getHeight())*3.0) / dividerRadius
+        speedEnemy = playerSpeed * getSettings().entities.ghost.playerSpeedRatio;
+        damageEnemy = getSettings().entities.ghost.damage;
+        radiusEnemy = getSettings().entities.ghost.radius;
+        hMultiplier = getSettings().entities.ghost.heightMultiplier;
+        animSpeed = getSettings().entities.ghost.animationSpeed;
+        maxMult = getSettings().entities.ghost.maxDistance;
+        maxD = Math.round(Math.max(getWidth(), getHeight())*maxMult) / dividerRadius
     }
     else {
-        speedEnemy = Math.max(0.3 * playerSpeed, Math.min(0.8 * playerSpeed, generateNormalRandom(0.5 * playerSpeed, 0.2 * playerSpeed)));  // Vitesse de déplacement
-        damageEnemy = 1;
-        radiusEnemy = 18
-        hMultiplier = 1.3;
-        maxD = Math.round(Math.max(getWidth(), getHeight())*2.30) / dividerRadius
+        let minRatio = getSettings().entities.enemy.minPlayerSpeedRatio;
+        let maxRatio = getSettings().entities.enemy.maxPlayerSpeedRatio;
+        let meanRatio = getSettings().entities.enemy.meanPlayerSpeedRatio;
+        let stdRatio = getSettings().entities.enemy.stdPlayerSpeedRatio;
+
+        speedEnemy = Math.max(minRatio * playerSpeed, Math.min(maxRatio * playerSpeed, generateNormalRandom(meanRatio * playerSpeed, stdRatio * playerSpeed)));  // Vitesse de déplacement
+        damageEnemy = getSettings().entities.enemy.damage;
+        radiusEnemy = getSettings().entities.enemy.radius;
+        hMultiplier = getSettings().entities.enemy.heightMultiplier;
+        maxMult = getSettings().entities.enemy.maxDistance;
+        maxD = Math.round(Math.max(getWidth(), getHeight())*maxMult) / dividerRadius
+        animSpeed = getSettings().entities.enemy.animationSpeed;
     }
 
     enemies.push({
@@ -240,14 +268,14 @@ export function spawnEnemy(typeElement = 'enemy', position = undefined) {
         maxDistance: maxD, // Distance maximale avant que l'ennemi ne disparaisse
         damage: damageEnemy,  // Dégâts infligés au joueur
         animationSpeed: animSpeed,  // Vitesse de l'animation
-        greenAnimationSpeed: 75,  // Vitesse de l'animation
+        greenAnimationSpeed: getSettings().entities.greenEnemy.animationSpeed,  // Vitesse de l'animation
         currentImage: 1,  // Image actuelle de l'ennemi
         direction: 'b',  // Dernière direction de l'ennemi
         lastChange: Date.now(),  // Dernier changement d'image
         disabledUntil: 0,  // temps desactivation apres attaque
-        speedDuration : 15, // temps de vitesse
-        invincibleDuration : 10, // temps d'invincibilité
-        stop: false,
+        speedDuration : getSettings().entities.star.speedDuration, // temps de vitesse augmentée
+        invincibleDuration : getSettings().entities.star.invincibleDuration, // temps d'invincibilité
+        stop: false, // delete enemy at next update
     });
 }
 
@@ -357,19 +385,19 @@ export function drawArrows() {
 }
 
 function drawPin(ctx, x, y, dx, dy, entity) {
-    let pinRadius = 21;         // Rayon du cercle pour le "pin"
+    let pinRadius = getSettings().desktopPinRadius;
     if (!isPhone()){
-        pinRadius = 23;
+        pinRadius = getSettings().phonePinRadius;
     }
     const pinLength = pinRadius * 1.6;
 
-    let color = "rgba(255, 255, 255, 0.6)"; // blanc   
-    let secondColor = "rgba(0, 0, 0, 0.2)";
+    let color = getSettings().pinFirstColor;
+    let secondColor = getSettings().pinSecondColor;
 
     // Calcule l'angle de la pointe pour pointer vers l'objet (à partir de dx, dy)
     const angle = Math.atan2(dy, dx);
 
-    const tipAngle = Math.PI / 1.4;  // Angle de la pointe du "pin"
+    const tipAngle = Math.PI / 1.4;  // Angle de la pointe du "pin", 1.4 est la bonne valeur pour que la pointe se fonde dans le cercle
 
     // Calcul des coordonnées pour l'extrémité du cercle
     const circleX = x + pinLength * Math.cos(angle);
@@ -441,7 +469,7 @@ function drawPin(ctx, x, y, dx, dy, entity) {
 
 // Fonction pour dessiner les ennemis
 export function drawEnemy(enemy) {
-    let margin = 50;
+    let margin = getSettings().entities.renderMargin;
     // si l'ennemi n'est pas dans le champ de vision du joueur, on ne le dessine pas, on met une marge de 20px pour ne pas le dessiner trop tard
     if (enemy.x - world.x < -margin || enemy.x - world.x > getWidth() + margin || enemy.y - world.y < -margin || enemy.y - world.y > getHeight() + margin){
         return;
@@ -451,9 +479,9 @@ export function drawEnemy(enemy) {
     let reduceScale = 1;
     if (getGhostStatus()){
         if (enemy.heightMultiplier != 1){
-            addGreen = 0.3;
+            addGreen = getSettings().entities.greenEnemy.heightAddition;
         }
-        reduceScale = 1.2;
+        reduceScale = getSettings().entities.ghost.reduceScale;
     }
 
     // Ajustez la taille du cœur en fonction du rayon de l'ennemi
@@ -543,8 +571,15 @@ export function updateEnemies() {
         }
 
         // Détection de collision entre le joueur et l'ennemi
-        const tolerance = 1.5; // pour ne pas enlever de la vie si l'ennemi effleure juste le joueur
-        if (tolerance*distance < player.radius + enemy.radius) {
+        let tolerance = getSettings().entities.baseTolerance;
+        let multiplier = 1;
+        let divider = 1;
+        if (getGhostStatus()){
+            multiplier = 1 + ((1-getSettings().player.ghostScaleMultiplier)/2);
+            divider = 1 + ((1-getSettings().entities.ghost.reduceScale)/2);
+            tolerance = getSettings().entities.ghostTolerance;
+        }
+        if (tolerance*distance < (player.radius*multiplier) + (enemy.radius/divider)) {
 
             if (getGhostStatus()){
                 if (enemy.type == 'food') {
@@ -556,7 +591,7 @@ export function updateEnemies() {
                     player.speedUntil = Date.now() + enemy.speedDuration * 1000;
                 }
                 if (enemy.type == 'enemy'){
-                    player.enemyKillCount += 3;
+                    player.enemyKillCount += getSettings().entities.greenEnemy.killPoints;
                 }
                 if (enemy.type == 'ghost'){
                     numGhost -= 1;
@@ -574,7 +609,7 @@ export function updateEnemies() {
                     numStars -= 1;
                 }
                 if (enemy.type == 'enemy'){
-                    player.enemyKillCount += 1;
+                    player.enemyKillCount += getSettings().entities.enemy.killPoints;
                 }
                 if (enemy.type == 'ghost'){
                     numGhost -= 1;
@@ -616,11 +651,11 @@ export function updateEnemies() {
         if (distance > 0) {
             if (enemy.type == 'food' || enemy.type == 'ghost') {
                 let speedEnemy = enemy.speed;
+                let radius = getSettings().entities.food.walkRadius;
+                if (enemy.type == 'ghost'){
+                    radius = getSettings().entities.ghost.walkRadius;
+                }
                 if (enemy.targetX == undefined || enemy.targetY == undefined){
-                    let radius = 75;
-                    if (enemy.type == 'ghost'){
-                        radius = 200;
-                    }
                     [enemy.targetX, enemy.targetY] = getRandomPointInCircle(enemy.baseX, enemy.baseY, radius);
                 }
                 dx = enemy.targetX - enemy.x;
@@ -637,7 +672,7 @@ export function updateEnemies() {
                         }
                     }
                     else if (Date.now() > enemy.timeLeaveTarget) {
-                        [enemy.targetX, enemy.targetY] = getRandomPointInCircle(enemy.baseX, enemy.baseY, 80);
+                        [enemy.targetX, enemy.targetY] = getRandomPointInCircle(enemy.baseX, enemy.baseY, radius);
                         enemy.timeLeaveTarget = -1;
                     }
                 }

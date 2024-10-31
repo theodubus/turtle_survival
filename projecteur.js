@@ -1,7 +1,8 @@
 import { ctx, getHeight, getWidth } from "./canvas.js";
 import { player, deactivateGhost } from "./player.js";
 import { world } from "./world.js";
-import { generateNormalRandom, findTangencyPoints } from "./utils.js";
+import { generateNormalRandom, findTangencyPoints, isPhone } from "./utils.js";
+import { getSettings } from "./settings.js";
 
 let projecteurs = []
 let baseSpeed = 1;
@@ -13,7 +14,7 @@ export function getProjecteurs(){
     return projecteurs;
 }
 
-function increaseDifficulty(speedIncrease = 0.04, thetaMuliplier = 0.98){
+function increaseDifficulty(speedIncrease = 0.035, thetaMuliplier = 0.98){
     baseSpeed += speedIncrease;
     thetaError *= thetaMuliplier;
 
@@ -33,7 +34,10 @@ export function addProjecteur(){
         let x_ref = player.x - world.x;
         let y_ref = player.y - world.y;
 
-        let ellipsis_rx = generateNormalRandom(100, 10);
+        let ellipsis_rx = generateNormalRandom(getSettings().projector.ellipsisMeanRx, getSettings().projector.ellipsisStdRx);
+        if (isPhone()){
+            ellipsis_rx *= getSettings().projector.sizeReductionFactor;
+        }
         let ellipsis_ry = ellipsis_rx / 3;
 
         let r = Math.max(getWidth(), getHeight()) / 2 + ellipsis_rx;
@@ -43,7 +47,7 @@ export function addProjecteur(){
         let y = y_ref + r * Math.sin(theta);
 
         let x_ori = Math.random() * (getWidth() * (6/5)) - getWidth()/10;
-        let y_ori = generateNormalRandom(-400, 20);
+        let y_ori = generateNormalRandom(getSettings().projector.meanYori, getSettings().projector.stdYori);
 
         projecteurs.push({
             x_ori: x_ori,

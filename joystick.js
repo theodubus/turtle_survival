@@ -1,5 +1,4 @@
 import { ctx, canvas } from './canvas.js';
-import { gameDifficulty } from "./game.js";
 
 const pi = Math.PI;
 
