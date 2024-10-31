@@ -74,9 +74,9 @@ const mySettings = {
         },
         ghost: {
             max: 1, // max number of ghosts at once
-            meanSpawnRate: 0,//60, // in seconds
+            meanSpawnRate: 60, // in seconds
             meanSpawnRateReduction: 15, // in seconds
-            firstSpawnAddition: 0,//30, // in seconds
+            firstSpawnAddition: 30, // in seconds
             stdSpawnRate: 7.5, // in seconds
             animationSpeed: 110, // in milliseconds
             playerSpeedRatio: 1.15,
