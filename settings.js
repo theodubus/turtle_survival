@@ -48,7 +48,7 @@ const mySettings = {
     // data about entities
     entities: {
         baseTolerance: 1.5, // tolerance for the entities to be considered touching the player
-        ghostTolerance: 1.3, // tolerance for the entities to be considered touching the player when ghost mode is activated
+        ghostTolerance: 1.4, // tolerance for the entities to be considered touching the player when ghost mode is activated
         enemySpawnInterval: 8500, // in milliseconds
         maxEnemiesPerWave: 80, // max number of enemies per wave
         ghostMultiplier: 4, // Multiplier for the number of enemies per wave when ghost mode is activated
