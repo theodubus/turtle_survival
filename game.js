@@ -5,14 +5,14 @@ import { updateMovement, keyDownHandler, keyUpHandler, updateDirection, updateSt
 import { drawTimer, clearCanvas, resizeCanvas } from './canvas.js';
 import { renderJoystick } from './joystick.js';
 import { generateNormalRandom } from "./utils.js";
-
 import { drawProjecteur, addProjecteur, getProjecteurs, drawProjecteurBase, projectorDamage, updateProjecteurs } from "./projecteur.js";
+import { getSettings } from './settings.js';
 
 export let elapsedTime = 0;       // Temps écoulé en secondes
 export let startTime = null;      // Pour stocker l'heure du début
 export let gameRunning = false;   // Indique si le jeu est en cours
-export let difficultyIncreaseRate = 0.0175;  // Taux d'augmentation de la difficulté
-export let initialDifficulty = 0.25;  // Difficulté initiale
+export let difficultyIncreaseRate = getSettings().difficultyIncreaseRate;  // Taux d'augmentation de la difficulté
+export let initialDifficulty = getSettings().initialDifficulty;  // Difficulté initiale
 let nextProjecteur = undefined;
 
 export function addDeltaTimeDifficulty(t) {

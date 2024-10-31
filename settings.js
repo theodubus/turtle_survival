@@ -3,6 +3,10 @@ const mySettings = {
     desktopScale: 1,
     phoneScale: 0.75,
 
+    // difficulty : difficulty of the game
+    difficultyIncreaseRate: 0.0175,
+    initialDifficulty: 0.25, // max is 1
+
     // dividerRadius : divider of the radius for spawning range and max distance
     destopDividerRadius: 1,
     phoneDividerRadius: 1.8,
@@ -50,7 +54,7 @@ const mySettings = {
         baseTolerance: 1.5, // tolerance for the entities to be considered touching the player
         ghostTolerance: 1.4, // tolerance for the entities to be considered touching the player when ghost mode is activated
         enemySpawnInterval: 8500, // in milliseconds
-        maxEnemiesPerWave: 80, // max number of enemies per wave
+        maxEnemiesPerWave: 70, // max number of enemies per wave
         ghostMultiplier: 4, // Multiplier for the number of enemies per wave when ghost mode is activated
         renderMargin: 50, // in pixels, margin around the canvas where entities are rendered
         star: {
@@ -66,7 +70,7 @@ const mySettings = {
             damage: 0,
             radius: 18, // radius (size)
             heightMultiplier: 1,
-            maxDistance: 3, // times max between width and height of the canvas
+            maxDistance: 3.5, // times max between width and height of the canvas
             speedDuration: 15, // in seconds, time the player speed is increased when ghost mode is activated
             invincibleDuration: 10, // in seconds, time the player is invincible (no ghost mode)
             speedMultiplier: 2.8, // speed multiplier
@@ -83,7 +87,7 @@ const mySettings = {
             damage: 0,
             radius: 20, // radius (size)
             heightMultiplier: 1,
-            maxDistance: 3, // times max between width and height of the canvas
+            maxDistance: 3.5, // times max between width and height of the canvas
             reduceScale: 1.2, // scale reduction of the entities when ghost mode is activated
             walkRadius: 150, // in pixels, radius of the circle where ghosts can walk
             speedMultiplier: 1.3, // speed multiplier of the player when ghost mode is activated
@@ -98,7 +102,7 @@ const mySettings = {
             damage: 3,
             radius: 15, // radius (size)
             heightMultiplier: 1.3,
-            maxDistance: 3, // times max between width and height of the canvas
+            maxDistance: 3.5, // times max between width and height of the canvas
             walkRadius: 75, // in pixels, radius of the circle where food can walk
         },
         enemy: {
