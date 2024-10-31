@@ -3,19 +3,27 @@ import { player, deactivateGhost } from "./player.js";
 import { world } from "./world.js";
 import { generateNormalRandom, findTangencyPoints, isPhone } from "./utils.js";
 import { getSettings } from "./settings.js";
+import { getDeltaTime } from "./game.js";
 
 let projecteurs = []
-let baseSpeed = 1;
+let playerSpeed;
+if (isPhone()){
+    playerSpeed = getSettings().player.phoneSpeed;
+}
+else {
+    playerSpeed = getSettings().player.desktopSpeed;
+}
+
+let baseSpeed = playerSpeed * getSettings().projector.playerSpeedRatio;
 let thetaError = Math.PI;
 let maxProjecteurs = 1;
-
 
 export function getProjecteurs(){
     return projecteurs;
 }
 
-function increaseDifficulty(speedIncrease = 0.035, thetaMuliplier = 0.98){
-    baseSpeed += speedIncrease;
+function increaseDifficulty(speedIncrease = 0.04, thetaMuliplier = 0.99){
+    baseSpeed += playerSpeed * speedIncrease;
     thetaError *= thetaMuliplier;
 
     if (maxProjecteurs < 3){
@@ -29,7 +37,7 @@ export function addProjecteur(){
         return;
     }
     else {
-        increaseDifficulty(0.015, 0.99);
+        increaseDifficulty(0.02, 0.995);
 
         let x_ref = player.x - world.x;
         let y_ref = player.y - world.y;
@@ -61,14 +69,14 @@ export function addProjecteur(){
             target_Y: undefined,
             old_Target_X: x,
             old_Target_Y: y,
-            speed: 1, 
+            speed: baseSpeed, 
         });
     }
 }
 
 export function emptyProjecteurs(){
     projecteurs = [];
-    baseSpeed = 1;
+    baseSpeed = player.speed * getSettings().projector.playerSpeedRatio;
     thetaError = Math.PI;
     maxProjecteurs = 1;
 }
@@ -180,7 +188,7 @@ export function updateProjecteurs(){
                 Math.pow(projecteur.target_Y - projecteur.y, 2)
             );
 
-            let r = Math.max(0, generateNormalRandom(160, 40));
+            let r = Math.max(0, generateNormalRandom(180, 30));
             let theta = Math.atan2(dy_player, dx_player) + (Math.random() - 0.5) * thetaError;
 
             projecteur.target_X = x_ref + r * Math.cos(theta);
@@ -215,8 +223,8 @@ export function updateProjecteurs(){
             let norm = Math.sqrt(dx * dx + dy * dy);
             dx = dx / norm * 2;
             dy = dy / norm * 2;
-            projecteur.x += dx * projecteur.speed;// * slowFactor;
-            projecteur.y += dy * projecteur.speed;// * slowFactor;
+            projecteur.x += dx * projecteur.speed * getDeltaTime();// * slowFactor;
+            projecteur.y += dy * projecteur.speed * getDeltaTime();// * slowFactor;
         }
 
 
@@ -225,7 +233,7 @@ export function updateProjecteurs(){
             Math.pow((player.y - world.y) - projecteur.y, 2)
         );
         if (distanceToPlayer > 3*Math.max(getHeight(), getWidth())/4){
-            projecteur.speed = 3.5;
+            projecteur.speed = 3.5 * baseSpeed;
         }
         else {
             projecteur.speed = baseSpeed;

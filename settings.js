@@ -29,6 +29,7 @@ const mySettings = {
         ellipsisMeanRx: 100,
         ellipsisStdRx: 10,
         sizeReductionFactor: 0.75, // reduction of the ellipsis when phone
+        playerSpeedRatio: 0.8,
     },
 
     // data about the player
@@ -73,9 +74,9 @@ const mySettings = {
         },
         ghost: {
             max: 1, // max number of ghosts at once
-            meanSpawnRate: 60, // in seconds
+            meanSpawnRate: 0,//60, // in seconds
             meanSpawnRateReduction: 15, // in seconds
-            firstSpawnAddition: 30, // in seconds
+            firstSpawnAddition: 0,//30, // in seconds
             stdSpawnRate: 7.5, // in seconds
             animationSpeed: 110, // in milliseconds
             playerSpeedRatio: 1.15,

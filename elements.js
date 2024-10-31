@@ -386,7 +386,7 @@ export function drawArrows() {
 
 function drawPin(ctx, x, y, dx, dy, entity) {
     let pinRadius = getSettings().desktopPinRadius;
-    if (!isPhone()){
+    if (isPhone()){
         pinRadius = getSettings().phonePinRadius;
     }
     const pinLength = pinRadius * 1.6;

@@ -113,7 +113,7 @@ function gameLoop() {
         createRadialGradient();
 
         if (nextProjecteur === undefined) {
-            nextProjecteur = Date.now();
+            nextProjecteur = Date.now() + generateNormalRandom(8000, 1000);
         }
         if (Date.now() > nextProjecteur) {
             addProjecteur();
