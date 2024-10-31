@@ -1,23 +1,35 @@
-    -> tirer boule feu
-    -> augmenter max hp
-    ;; -> augmenter vitesse (jusqu'a max vitesse)
-    -> faire passer le temps 2 fois plus vite
-    -> tuer un ennemi fait gagner des points
+Temp buffs
+  + Bowser crache feu
+  + Lance bombe (choisis zone) 
 
-    ennemis
-    -> augmenter degats
-    -> générés plus frequemment
-    -> pas one shot
+Perm buffs (dans un coffre)
+  + health max 
+  + speed 
+  + items
+  + - speed marios
+  + - nb marios 
+  + revive
+  + passive defense magikoopa
+  + Garder idem en stock
 
 faire plusieurs types d'ennemis
-penser a supprimer les objets qui sortent de l'écran (projectiles, bonus, ennemis)
 
+Leaderboard  
 
-coffre avec indication fleche
-mario meurt animation
+- Anti cheat : bowser bouge pas + 20 sec + non invincible (reload sans scorer)
+Req en début et fin de partie (prévoir qu'il ne finisse pas la partie)
+- Anti pseudo grossier
+- Empêcher le Vidage de la table 
+- Serveur intermédiaire ?
 
+Blocs obstacles
+
+Réintroduire ease in pour les projos
 
 -----
 
+Animation mort bowser
 animation mort luigi mario
-aspire ? (boo toune sur lui-même)
+aspire luigis (boo toune sur lui-même) tornade
+ajouter des frames luigi peur (saute ou recroquevillé)
+
