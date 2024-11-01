@@ -10,7 +10,7 @@ export function checkCheat(){
     let timeSinceLastCheck = Date.now() - timeNextCheck;
 
     // No check for a certain time, the game has been paused
-    if (timeSinceLastCheck > checkInterval + checkTolerance){
+    if ((timeSinceLastCheck > checkInterval + checkTolerance) && (timeNextCheck != 0)){
         return 1;
     }
 
