@@ -177,7 +177,6 @@ export function updateTargets(dx, dy){
 export function updateProjecteurs(){
     projecteurs.forEach(projecteur => {
         let distance_to_target = 0;
-        // let slowFactor = 1;
         if (projecteur.target_X == undefined){
             let x_ref = player.x - world.x;
             let y_ref = player.y - world.y;
@@ -207,24 +206,14 @@ export function updateProjecteurs(){
             return;
         }
 
-        // let distance_to_old_target = Math.sqrt(
-        //     Math.pow(projecteur.old_Target_X - projecteur.x, 2) +
-        //     Math.pow(projecteur.old_Target_Y - projecteur.y, 2)
-        // );
-    
-        // let distance = Math.min(distance_to_target, distance_to_old_target);
-        // if (distance < 100){
-        //     slowFactor = Math.min(((distance) / 70) + 0.1, 1);
-        // }
-
         if (projecteur.target_X != undefined){
             let dx = projecteur.target_X - projecteur.x;
             let dy = projecteur.target_Y - projecteur.y;
             let norm = Math.sqrt(dx * dx + dy * dy);
             dx = dx / norm * 2;
             dy = dy / norm * 2;
-            projecteur.x += dx * projecteur.speed * getDeltaTime();// * slowFactor;
-            projecteur.y += dy * projecteur.speed * getDeltaTime();// * slowFactor;
+            projecteur.x += dx * projecteur.speed * getDeltaTime();
+            projecteur.y += dy * projecteur.speed * getDeltaTime();
         }
 
 

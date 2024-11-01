@@ -2,11 +2,12 @@ import { activateGhost, drawHealthBar, drawInvincibilityBar, drawGhostBar, drawP
 import { drawWorld, createRadialGradient, world } from './world.js';
 import { enemySpawnInterval, waveEnemy, drawEnemy, updateEnemies, spawnFood, spawnStar, spawnGhost, drawArrows, getEntities } from './elements.js';
 import { updateMovement, keyDownHandler, keyUpHandler, updateDirection, updateStatic } from './input.js';
-import { drawTimer, clearCanvas, resizeCanvas } from './canvas.js';
+import { drawTimer, clearCanvas, resizeCanvas, ctx } from './canvas.js';
 import { renderJoystick } from './joystick.js';
 import { generateNormalRandom } from "./utils.js";
 import { drawProjecteur, addProjecteur, getProjecteurs, drawProjecteurBase, projectorDamage, updateProjecteurs } from "./projecteur.js";
 import { getSettings } from './settings.js';
+import { checkCheat } from './anti_cheat.js';
 
 export let elapsedTime = 0;       // Temps écoulé en secondes
 export let startTime = null;      // Pour stocker l'heure du début
@@ -84,6 +85,7 @@ function drawAllEntities(){
     }
 }
 
+let cheater = false;
 
 function gameLoop() {
 
@@ -106,6 +108,19 @@ function gameLoop() {
     updatePlayer();           // Met à jour le joueur
     updateProjecteurs();
     projectorDamage();
+
+    let cheat = checkCheat();
+    if (cheat != 0){
+        if (cheat == 1){
+            cheater = true;
+        }
+    }
+
+    if (cheater){
+        ctx.font = "30px Arial";
+        ctx.fillStyle = "red";
+        ctx.fillText("CHEATER", 200, 200);
+    }
 
     drawArrows();             // Dessine les flèches de direction
 
