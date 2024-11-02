@@ -64,45 +64,49 @@ export function unpauseGame(){
     lastCheck = Date.now();
 }
 
-export function drawPause(){
-    const pauseText = "⏸";
-    ctx.fillStyle = pauseRect.isHovered ? "rgb(230, 0, 0)" : "rgb(250, 240, 230)";
-    ctx.textAlign = "center";
-    ctx.font = getSettings().bigFont;
-    const pauseTextWidth = ctx.measureText(pauseText).width;
+export function drawPause() {
     const rectHeight = 30;
     const padding = 10;
+    const barWidth = 5;
+    const barHeight = 20;
 
-    const rectX = getWidth() - pauseTextWidth - 40;
-    const rectY = 0;
-    const rectWidth = pauseTextWidth + padding * 2;
+    // Coordonnées du rectangle du bouton de pause
+    const rectX = getWidth() - barWidth * 4 - 40; // Ajuste pour bien placer le bouton
+    const rectY = 3;
 
-    ctx.fillText(pauseText, (rectX + rectWidth / 2), rectY + rectHeight / 2 + 15); // Centrer le texte
+    // Couleur des barres : rouge si en hover, sinon noir
+    ctx.fillStyle = pauseRect.isHovered ? "rgb(230, 0, 0)" : "rgb(250, 240, 230)";
 
+    // Dessin des deux barres pour le symbole de pause
+    ctx.fillRect(rectX + padding, rectY + (rectHeight - barHeight) / 2, barWidth, barHeight);
+    ctx.fillRect(rectX + padding + barWidth * 2, rectY + (rectHeight - barHeight) / 2, barWidth, barHeight);
 
-    if (!paused){
-        return;
-    }
+    // Gestion de l'affichage de l'écran de pause
+    if (!paused) return;
+
+    // Écran de pause
     ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
     ctx.fillRect(0, 0, getWidth(), getHeight());
     ctx.fillStyle = "white";
     ctx.font = "40px Arial";
     ctx.textAlign = "center";
-    ctx.fillText("Game paused", getWidth()/2, 1*getHeight()/3);
+    ctx.fillText("Game paused", getWidth() / 2, (1 * getHeight()) / 3);
 
-    // Draw menu button
+    // Bouton Menu
     ctx.font = "25px Arial";
     ctx.fillStyle = menuRect.isHovered ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0.5)";
     ctx.fillRect(menuRect.x, menuRect.y, menuRect.width, menuRect.height);
     ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-    ctx.fillText("Menu", menuRect.x + menuRect.width/2, menuRect.y + menuRect.height/2 + 10);
+    ctx.fillText("Menu", menuRect.x + menuRect.width / 2, menuRect.y + menuRect.height / 2 + 10);
 
-    // Draw resume button
+    // Bouton Resume
     ctx.fillStyle = resumeRect.isHovered ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0.5)";
     ctx.fillRect(resumeRect.x, resumeRect.y, resumeRect.width, resumeRect.height);
     ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-    ctx.fillText("Resume", resumeRect.x + resumeRect.width/2, resumeRect.y + resumeRect.height/2 + 10);
+    ctx.fillText("Resume", resumeRect.x + resumeRect.width / 2, resumeRect.y + resumeRect.height / 2 + 10);
 }
+
+
 
 function isInsideRect(x, y, rect) {
     return (
