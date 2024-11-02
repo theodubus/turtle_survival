@@ -1,7 +1,7 @@
 import { ctx, getHeight, getWidth } from "./canvas.js";
 import { player, deactivateGhost } from "./player.js";
 import { world } from "./world.js";
-import { generateNormalRandom, findTangencyPoints, isPhone } from "./utils.js";
+import { generateNormalRandom, findTangencyPoints, isPhone, now } from "./utils.js";
 import { getSettings } from "./settings.js";
 import { getDeltaTime } from "./game.js";
 
@@ -149,9 +149,9 @@ export function projectorDamage(){
 
 
         if (Math.pow(x - center_x, 2) / Math.pow(r_x, 2) + Math.pow(y - center_y, 2) / Math.pow(r_y, 2) <= 1){
-            if (projecteurs[i].pauseUntil < Date.now()){
+            if (projecteurs[i].pauseUntil < now()){
                 player.ghostHp -= 1;
-                projecteurs[i].pauseUntil = Date.now() + 250;
+                projecteurs[i].pauseUntil = now() + 250;
 
                 if (player.ghostHp <= 0){
                     deactivateGhost();

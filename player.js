@@ -1,10 +1,11 @@
 import { ctx, canvas, getHeight, getWidth } from "./canvas.js";
-import { isPhone, getScale } from './utils.js';
-import { elapsedTime, addDeltaTimeDifficulty, gameDifficulty } from './game.js';
+import { isPhone, getScale, now } from './utils.js';
+import { timerTime, gameDifficulty, addGhostTime } from './game.js';
 import { changeBackgroundImage } from "./world.js";
 import { emptyProjecteurs } from "./projecteur.js";
-import { filterEnemies, resetStar, resetGhost, deleteTimeouts } from "./elements.js";
+import { filterEnemies, resetStar, resetGhost, deleteTimeouts, resetLastWave } from "./elements.js";
 import { getSettings } from './settings.js';
+import { checkPause } from "./pause.js";
 
 let speedPlayer = getSettings().player.desktopSpeed;
 let timeGhost = 0;
@@ -39,7 +40,7 @@ export let player = {
 
 // Fonction pour dessiner la barre de vie en haut à gauche
 export function drawHealthBar() {
-    if (player.InvincibleUntil < Date.now() && !getGhostStatus()){
+    if (player.InvincibleUntil < now() && !getGhostStatus()){
         let barWidth = player.radius*1.1;
         const barHeight = 5;
         let barPadding = 3;
@@ -80,7 +81,7 @@ export function drawGhostBar() {
 
 // Fonction pour dessiner la barre de vie en haut à gauche
 export function drawInvincibilityBar() {
-    if (player.InvincibleUntil > Date.now() || (getGhostStatus() && player.speedUntil > Date.now())){
+    if (player.InvincibleUntil > now() || (getGhostStatus() && player.speedUntil > now())){
         let barWidth = player.radius * 1.1;
         const barHeight = 5;
         let barPadding = 3;
@@ -90,10 +91,10 @@ export function drawInvincibilityBar() {
         const barX = player.x - barWidth / 2;
         const barY = player.y + player.radius + barHeight + barPadding;
 
-        let timeRemaining = player.InvincibleUntil - Date.now();
+        let timeRemaining = player.InvincibleUntil - now();
         let maxTime = 10;
         if (getGhostStatus()){
-            timeRemaining = player.speedUntil - Date.now();
+            timeRemaining = player.speedUntil - now();
             maxTime = 15;
         }
 
@@ -171,7 +172,7 @@ export function drawPlayer() {
     else if (getGhostStatus()){
         imageDisplay = ghostImages[player.direction][player.currentImage];
     }
-    else if (player.InvincibleUntil > Date.now()){
+    else if (player.InvincibleUntil > now()){
         imageDisplay = bouleImages[player.direction][player.currentImage];
     }
     else{
@@ -188,37 +189,38 @@ export function drawPlayer() {
     );
 
     // temps depuis lequel on a changé l'image
-    const timeSinceChange = Date.now() - player.lastChange;
+    const timeSinceChange = now() - player.lastChange;
     if (timeSinceChange > player.animationSpeed) {
         if (!player.eating){
-            if (getGhostStatus()){
-                player.currentImage = (player.currentImage + 1) % numGhostImages;
-                player.lastChange = Date.now();
+            if (!checkPause()){
+                if (getGhostStatus()){
+                    player.currentImage = (player.currentImage + 1) % numGhostImages;
+                }
+                else if (player.InvincibleUntil > now()){
+                    player.currentImage = (player.currentImage + 1) % numBouleImages;
+                }
+                else if (!player.currentImage == 0){
+                    player.currentImage = Math.max(1, (player.currentImage + 1) % numImages);
+                }
             }
-            else if (player.InvincibleUntil > Date.now()){
-                player.currentImage = (player.currentImage + 1) % numBouleImages;
-                player.lastChange = Date.now();
-            }
-            else if (!player.currentImage == 0){
-                // Mettez à jour l'index de l'image actuelle, max entre 1 et le resultat 
-                player.currentImage = Math.max(1, (player.currentImage + 1) % numImages);
-                player.lastChange = Date.now();
-            }
+            player.lastChange = now();
         }
         else{
-            player.currentImage = player.currentImage + 1;
-            player.lastChange = Date.now();
-            if (player.currentImage >= numFoodImages){
-                player.eating = false;
-                player.currentImage = 1;
-                player.hp = Math.min(player.hp + player.pendingHp, player.maxHp);
+            if (!checkPause()){
+                player.currentImage = player.currentImage + 1;
+                if (player.currentImage >= numFoodImages){
+                    player.eating = false;
+                    player.currentImage = 1;
+                    player.hp = Math.min(player.hp + player.pendingHp, player.maxHp);
+                }
             }
+            player.lastChange = now();
         }
     }
 }
 
 export function eat(hp, animation = true){
-    if (player.InvincibleUntil > Date.now()){
+    if (player.InvincibleUntil > now()){
         animation = false;
     }
     if (animation){
@@ -236,13 +238,13 @@ export function eat(hp, animation = true){
 }
 
 export function invinciblePlayer(duration){
-    player.InvincibleUntil = Date.now() + duration * 1000;
+    player.InvincibleUntil = now() + duration * 1000;
     player.currentImage = 0;
     player.animationSpeed = player.bouleAnimationSpeed;
 }
 
 export function updatePlayer(){
-    if (player.InvincibleUntil < Date.now() && !getGhostStatus()){
+    if (player.InvincibleUntil < now() && !getGhostStatus()){
         player.animationSpeed = player.baseAnimationSpeed;
     }
 }
@@ -250,7 +252,7 @@ export function updatePlayer(){
 export function getScore() {
     let timeFactor = getSettings().score.timeFactor;
     let killCountFactor = getSettings().score.killCountFactor;
-    return Math.round((Math.floor(elapsedTime) * timeFactor + player.enemyKillCount * killCountFactor));
+    return Math.round((Math.floor(timerTime) * timeFactor + player.enemyKillCount * killCountFactor));
 }
 
 
@@ -262,7 +264,7 @@ export function activateGhost(){
     player.animationSpeed = player.ghostAnimationSpeed;
     player.InvincibleUntil = 0
     resetStar();
-    timeGhost = Date.now();
+    timeGhost = now();
 }
 
 export function deactivateGhost(){
@@ -272,8 +274,9 @@ export function deactivateGhost(){
     emptyProjecteurs();
     filterEnemies(0.1);
     resetGhost();
-    addDeltaTimeDifficulty((Date.now()-timeGhost));
+    addGhostTime((now()-timeGhost)/1000);
     deleteTimeouts();
+    resetLastWave();
 }
 
 export function getGhostStatus(){

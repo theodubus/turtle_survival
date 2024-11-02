@@ -1,16 +1,18 @@
 import { activateGhost, drawHealthBar, drawInvincibilityBar, drawGhostBar, drawPlayer, updatePlayer, getScore, getGhostStatus, player } from './player.js';
 import { drawWorld, createRadialGradient, world } from './world.js';
-import { enemySpawnInterval, waveEnemy, drawEnemy, updateEnemies, spawnFood, spawnStar, spawnGhost, drawArrows, getEntities } from './elements.js';
+import { getWaveEnemy, drawEnemy, updateEnemies, spawnFood, spawnStar, spawnGhost, drawArrows, getEntities, waveEnemy } from './elements.js';
 import { updateMovement, keyDownHandler, keyUpHandler, updateDirection, updateStatic } from './input.js';
-import { drawTimer, clearCanvas, resizeCanvas, ctx } from './canvas.js';
+import { drawTimer, clearCanvas, resizeCanvas } from './canvas.js';
 import { renderJoystick } from './joystick.js';
-import { generateNormalRandom } from "./utils.js";
+import { generateNormalRandom, now } from "./utils.js";
 import { drawProjecteur, addProjecteur, getProjecteurs, drawProjecteurBase, projectorDamage, updateProjecteurs } from "./projecteur.js";
 import { getSettings } from './settings.js';
-import { checkCheat } from './anti_cheat.js';
+import { checkQuit, pauseGame, checkPause, drawPause } from './pause.js';
 
 export let elapsedTime = 0;       // Temps écoulé en secondes
-export let startTime = null;      // Pour stocker l'heure du début
+export let timerTime = 0;         // Temps écoulé en secondes
+export let delta = 0;             // Temps écoulé en secondes
+export let startTime = Date.now();      // Pour stocker l'heure du début
 export let gameRunning = false;   // Indique si le jeu est en cours
 export let difficultyIncreaseRate = getSettings().difficultyIncreaseRate;  // Taux d'augmentation de la difficulté
 export let initialDifficulty = getSettings().initialDifficulty;  // Difficulté initiale
@@ -20,26 +22,16 @@ export function addDeltaTimeDifficulty(t) {
     startTime += t;
 }
 
+export function addGhostTime(t) {
+    delta += t;
+}
+
 export function gameDifficulty() {
     let b = Math.log(1/initialDifficulty - 1);
-    return 1 / (1 + Math.exp(-difficultyIncreaseRate * elapsedTime + b));
+    return 1 / (1 + Math.exp(-difficultyIncreaseRate * timerTime + b));
 }
 
-export function setStartTime() {
-    startTime = Date.now();
-}
-
-export function getGameRunning() {
-    return gameRunning;
-}
-
-export function startGame() {
-    gameRunning = true;  // Le jeu commence
-}
-
-export function restartGame() {
-    gameRunning = false;  // Le jeu s'arrête
-    
+export function restartGame() {    
     // Affiche une alerte système avec le temps écoulé
     alert(`Vous avez fait ${getScore()} points`);
     
@@ -47,7 +39,7 @@ export function restartGame() {
     location.reload();
 }
 
-let lastFrameTime = Date.now();
+let lastFrameTime = now();
 export let deltaTime = 0;
 export function getDeltaTime() {
     return deltaTime;
@@ -85,68 +77,63 @@ function drawAllEntities(){
     }
 }
 
-let cheater = false;
+function projectorHandle(){
+    if (getGhostStatus()) {
+        if (nextProjecteur === undefined) {
+            nextProjecteur = now() + generateNormalRandom(2000, 500);
+        }
+        if (now() > nextProjecteur) {
+            addProjecteur();
+            nextProjecteur = now() + generateNormalRandom(8000, 1000);
+        }
+        updateProjecteurs();
+        projectorDamage();
+    }
+}
 
 function gameLoop() {
 
     // Calcul du temps écoulé depuis la dernière frame
-    const currentTime = Date.now();
+    const currentTime = now();
     deltaTime = (currentTime - lastFrameTime) / 1000;
     lastFrameTime = currentTime;
-
+    
     clearCanvas();            // Efface le canvas
     drawWorld();              // Dessine le monde (la grille)
     drawAllEntities();        // Dessine les entités (ennemis, joueur, etc.)
-    updateMovement();         // Met à jour la position du monde
-    updateEnemies();          // Met à jour les ennemis
-    updateDirection();        // Met à jour la direction du joueur
-    updateStatic();           // Met à jour l'image statique du joueur
-    renderJoystick();             // Boucle de rendu pour les animations
-    spawnFood();              // Génère de la nourriture
-    spawnStar();              // Génère des étoiles
-    spawnGhost();             // Génère des fantômes
-    updatePlayer();           // Met à jour le joueur
-    updateProjecteurs();
-    projectorDamage();
-
-    let cheat = checkCheat();
-    if (cheat != 0){
-        if (cheat == 1){
-            cheater = true;
-        }
-    }
-
-    if (cheater){
-        ctx.font = "30px Arial";
-        ctx.fillStyle = "red";
-        ctx.fillText("CHEATER", 200, 200);
-    }
-
     drawArrows();             // Dessine les flèches de direction
-
-    if (getGhostStatus()) {
-        createRadialGradient();
-
-        if (nextProjecteur === undefined) {
-            nextProjecteur = Date.now() + generateNormalRandom(2000, 500);
-        }
-        if (Date.now() > nextProjecteur) {
-            addProjecteur();
-            nextProjecteur = Date.now() + generateNormalRandom(8000, 1000);
-        }
-    }
-
-    drawInvincibilityBar();   // Dessine la barre d'invincibilité en haut à gauche
     
-    // Si le jeu est en cours, met à jour le temps écoulé
-    if (gameRunning && !getGhostStatus()){
+    if (!checkPause()) {
+        checkQuit();
+        getWaveEnemy();
+        updateEnemies();          // Met à jour les ennemis
+        updateDirection();        // Met à jour la direction du joueur
+        updateMovement();         // Met à jour la position du monde
+        updateStatic();           // Met à jour l'image statique du joueur
+        spawnFood();              // Génère de la nourriture
+        spawnStar();              // Génère des étoiles
+        spawnGhost();             // Génère des fantômes
+        updatePlayer();           // Met à jour le joueur
+        projectorHandle();
+        renderJoystick();             // Boucle de rendu pour les animations
+        
         const currentTime = Date.now();
         elapsedTime = (currentTime - startTime) / 1000;  // Convertit en secondes
+        
+        // freeze timer when ghost
+        if (!getGhostStatus()){
+            timerTime = elapsedTime - delta;
+        }
     }
 
-    drawTimer();              // Dessine le timer en haut à droite
+        
+    
+    drawInvincibilityBar();   // Dessine la barre d'invincibilité en haut à gauche
     drawHealthBar();          // Dessine la barre de vie en haut à gauche
     drawGhostBar();           // Dessine la barre de vie en haut à gauche
+    createRadialGradient();
+    drawTimer();              // Dessine le timer en haut à droite
+    drawPause();         
 
     // // pause the game for 50 milliseconds
     // setTimeout(() => {
@@ -160,14 +147,8 @@ function gameLoop() {
 window.addEventListener('keydown', keyDownHandler);
 window.addEventListener('keyup', keyUpHandler);
 
-// Générer une vague d'ennemis au début du jeu
+window.addEventListener('resize', resizeCanvas);
+
 waveEnemy();
 
-// Générer des ennemis toutes les 2 secondes
-setInterval(waveEnemy, enemySpawnInterval);
-
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-// Lancer la boucle de jeu
 gameLoop();

@@ -1,9 +1,10 @@
-import { generateNormalRandom, getNormalRandom, getRandomPointInCircle, getScale, isPhone } from './utils.js';
+import { generateNormalRandom, getNormalRandom, getRandomPointInCircle, getScale, isPhone, now } from './utils.js';
 import { ctx, getHeight, getWidth } from './canvas.js';
 import { player, eat, invinciblePlayer, drawHealthBar, getGhostStatus, activateGhost, deactivateGhost } from './player.js';
 import { world } from './world.js';
-import { getGameRunning, startGame, restartGame, setStartTime, gameDifficulty, getDeltaTime } from './game.js';
+import { restartGame, gameDifficulty, getDeltaTime } from './game.js';
 import { getSettings } from './settings.js';
+import { checkPause } from './pause.js';
 
 // Tableau pour stocker les ennemis
 let enemies = [];
@@ -18,6 +19,7 @@ let maxGhost = getSettings().entities.ghost.max;
 let firstGhost = 1;
 let numFood = 0;
 let maxFood = getSettings().entities.food.max;
+let lastWave = 0;
 
 let dividerRadius = getSettings().destopDividerRadius;
 if (isPhone()){
@@ -86,18 +88,30 @@ export function waveEnemy() {
     }
 }
 
+export function getWaveEnemy(){
+    if (now() - lastWave > enemySpawnInterval){
+        waveEnemy();
+        lastWave = now();
+    }
+}
+
+export function resetLastWave(){
+    lastWave = 0;
+}
+    
+
 export function spawnFood() {
     let mean = getSettings().entities.food.meanSpawnRate;
     mean -= getSettings().entities.food.meanSpawnRateReduction * gameDifficulty();
     let stdDev = getSettings().entities.food.stdSpawnRate;
 
     if (nextFood == undefined){
-        nextFood = Date.now() + getNormalRandom(mean, stdDev) * 1000;
+        nextFood = now() + getNormalRandom(mean, stdDev) * 1000;
     }
-    else if (Date.now() > nextFood && numFood < maxFood) {
+    else if (now() > nextFood && numFood < maxFood) {
         spawnEnemy('food');
         numFood += 1;
-        nextFood = Date.now() + getNormalRandom(mean, stdDev) * 1000;
+        nextFood = now() + getNormalRandom(mean, stdDev) * 1000;
     }
 }
 
@@ -113,15 +127,15 @@ export function spawnGhost() {
     let stdDev = getSettings().entities.ghost.stdSpawnRate;
 
     if (nextGhost == undefined){
-        nextGhost = Date.now() + getNormalRandom(mean, stdDev) * 1000;
+        nextGhost = now() + getNormalRandom(mean, stdDev) * 1000;
     }
-    else if (Date.now() > nextGhost && numGhost < maxGhost) {
+    else if (now() > nextGhost && numGhost < maxGhost) {
         if (getGhostStatus()){
             return;
         }
         spawnEnemy('ghost');
         numGhost += 1;
-        nextGhost = Date.now() + getNormalRandom(mean, stdDev) * 1000;
+        nextGhost = now() + getNormalRandom(mean, stdDev) * 1000;
     }
 }
 
@@ -135,27 +149,27 @@ export function spawnStar() {
         mean = getSettings().entities.star.meanGhostSpawnRate;
     }
     if (nextStar == undefined){
-        nextStar = Date.now() + getNormalRandom(mean, stdDev) * 1000;
+        nextStar = now() + getNormalRandom(mean, stdDev) * 1000;
         if (getGhostStatus()){
-            nextStar = Date.now();
+            nextStar = now();
             let distanceStar = getSettings().entities.star.ghostInitStarDistance;
             position = [player.x + world.x, player.y + world.y + distanceStar];
             spawnEnemy('star', position);
             numStars += 1;
-            nextStar = Date.now() + getNormalRandom(mean, stdDev) * 1000;
+            nextStar = now() + getNormalRandom(mean, stdDev) * 1000;
         }
     }
-    else if (player.InvincibleUntil > Date.now() && numStars < maxStars){
-        let delta = Math.abs(nextStar - Date.now());
+    else if (player.InvincibleUntil > now() && numStars < maxStars){
+        let delta = Math.abs(nextStar - now());
         let minimumWaitTime = getSettings().entities.star.minimumWaitTime;
-        if (delta < minimumWaitTime || nextStar < Date.now()){
-            nextStar = Math.max(nextStar, Date.now()) + getNormalRandom(mean/2, stdDev/2) * 1000;
+        if (delta < minimumWaitTime || nextStar < now()){
+            nextStar = Math.max(nextStar, now()) + getNormalRandom(mean/2, stdDev/2) * 1000;
         }
     }
-    else if (Date.now() > nextStar && numStars < maxStars) {
+    else if (now() > nextStar && numStars < maxStars) {
         spawnEnemy('star');
         numStars += 1;
-        nextStar = Date.now() + getNormalRandom(mean, stdDev) * 1000;
+        nextStar = now() + getNormalRandom(mean, stdDev) * 1000;
     }
 }
 
@@ -171,12 +185,6 @@ export function resetStar() {
 }
 
 export function spawnEnemy(typeElement = 'enemy', position = undefined) {
-    if (!getGameRunning()) {
-        enemies = [];  // Efface tous les ennemis
-        setStartTime();  // Démarre le timer lorsque le premier ennemi apparaît
-        startGame();  // Marque que le jeu est en cours
-    }
-
     const angle = Math.random() * Math.PI * 2;  // Angle aléatoire
     let distance;
     if (typeElement == 'enemy'){
@@ -271,7 +279,7 @@ export function spawnEnemy(typeElement = 'enemy', position = undefined) {
         greenAnimationSpeed: getSettings().entities.greenEnemy.animationSpeed,  // Vitesse de l'animation
         currentImage: 1,  // Image actuelle de l'ennemi
         direction: 'b',  // Dernière direction de l'ennemi
-        lastChange: Date.now(),  // Dernier changement d'image
+        lastChange: now(),  // Dernier changement d'image
         disabledUntil: 0,  // temps desactivation apres attaque
         speedDuration : getSettings().entities.star.speedDuration, // temps de vitesse augmentée
         invincibleDuration : getSettings().entities.star.invincibleDuration, // temps d'invincibilité
@@ -523,19 +531,21 @@ export function drawEnemy(enemy) {
     if (enemy.type == 'food' || enemy.type == 'enemy' || enemy.type == 'ghost'){                
     // if (true){
         // temps depuis lequel on a changé l'image
-        const timeSinceChange = Date.now() - enemy.lastChange;
+        const timeSinceChange = now() - enemy.lastChange;
         if (timeSinceChange > enemy.animationSpeed || (getGhostStatus() && timeSinceChange > enemy.greenAnimationSpeed)) {
             // Mettez à jour l'index de l'image actuelle, max entre 1 et le resultat 
-            if (enemy.type == "ghost"){
-                enemy.currentImage = (enemy.currentImage + 1) % numGhostImages;
+            if (!checkPause()){
+                if (enemy.type == "ghost"){
+                    enemy.currentImage = (enemy.currentImage + 1) % numGhostImages;
+                }
+                else if (enemy.type == "enemy"){
+                    enemy.currentImage = (enemy.currentImage + 1) % numImages;
+                }
+                else{
+                    enemy.currentImage = Math.max(1, (enemy.currentImage + 1) % numImages);
+                }
             }
-            else if (enemy.type == "enemy"){
-                enemy.currentImage = (enemy.currentImage + 1) % numImages;
-            }
-            else{
-                enemy.currentImage = Math.max(1, (enemy.currentImage + 1) % numImages);
-            }
-            enemy.lastChange = Date.now();
+            enemy.lastChange = now();
         }
     }
 }
@@ -588,7 +598,7 @@ export function updateEnemies() {
                 }
                 if (enemy.type == 'star'){
                     numStars -= 1;
-                    player.speedUntil = Date.now() + enemy.speedDuration * 1000;
+                    player.speedUntil = now() + enemy.speedDuration * 1000;
                 }
                 if (enemy.type == 'enemy'){
                     player.enemyKillCount += getSettings().entities.greenEnemy.killPoints;
@@ -599,7 +609,7 @@ export function updateEnemies() {
                 return false;
             }
 
-            if (player.InvincibleUntil > Date.now()){
+            if (player.InvincibleUntil > now()){
                 if (enemy.type == 'food') {
                     eat(enemy.damage, false);
                     numFood -= 1;
@@ -636,9 +646,9 @@ export function updateEnemies() {
                 return false;
             }
 
-            if (enemy.disabledUntil < Date.now()){
+            if (enemy.disabledUntil < now()){
                 player.hp -= enemy.damage;
-                enemy.disabledUntil = Date.now() + 1000;
+                enemy.disabledUntil = now() + 1000;
             }
 
             if (player.hp <= 0) {
@@ -665,13 +675,13 @@ export function updateEnemies() {
                 if (distance < 5) {
                     if (enemy.timeLeaveTarget < 0) {
                         if (enemy.type == 'food'){
-                            enemy.timeLeaveTarget = Date.now() + 1500;
+                            enemy.timeLeaveTarget = now() + 1500;
                         }
                         else {
-                            enemy.timeLeaveTarget = Date.now() + 1500;
+                            enemy.timeLeaveTarget = now() + 1500;
                         }
                     }
-                    else if (Date.now() > enemy.timeLeaveTarget) {
+                    else if (now() > enemy.timeLeaveTarget) {
                         [enemy.targetX, enemy.targetY] = getRandomPointInCircle(enemy.baseX, enemy.baseY, radius);
                         enemy.timeLeaveTarget = -1;
                     }

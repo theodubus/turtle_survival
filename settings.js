@@ -8,11 +8,12 @@ const mySettings = {
     initialDifficulty: 0.25, // max is 1
 
     // dividerRadius : divider of the radius for spawning range and max distance
-    destopDividerRadius: 1,
-    phoneDividerRadius: 1.8,
+    destopDividerRadius: 1.2,
+    phoneDividerRadius: 1.2,
 
     // font
     font: "20px Arial",
+    bigFont: "40px Arial",
 
     // pinRadius : radius of the pin that indicates far away entities
     desktopPinRadius: 25,

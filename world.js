@@ -1,5 +1,6 @@
 import { ctx, getHeight, getWidth } from './canvas.js';
 import { updateEnemiesPosition } from './elements.js';
+import { getGhostStatus } from './player.js';
 import { updateTargets } from "./projecteur.js";
 
 // Coordonnées du monde (représente le déplacement dans l'aire infinie)
@@ -44,6 +45,10 @@ export function changeBackgroundImage(newImage) {
 // }
 
 export function createRadialGradient() {
+    if (!getGhostStatus()){
+        return;
+    }
+
     // Coordonnées du centre du canvas
     const centerX = getWidth() / 2;
     const centerY = getHeight() / 2;

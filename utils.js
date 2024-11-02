@@ -1,4 +1,9 @@
+import { elapsedTime } from "./game.js";
 import { getSettings } from "./settings.js";
+
+export function now() {
+    return elapsedTime * 1000;
+}
 
 export function generateNormalRandom(mean, stdDev) {
     let u1 = Math.random(); // Un nombre aléatoire entre 0 et 1

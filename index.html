@@ -7,7 +7,13 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  <script>
+    const canvas = document.createElement('canvas');
+    canvas.id = 'gameCanvas';
+    canvas.width = Math.min(Math.round(0.95 * window.innerWidth), 1000);
+    canvas.height = Math.min(Math.round(0.98 * window.innerHeight), 600);
+    document.body.appendChild(canvas);
+  </script>
   <script type="module" src="game.js"></script>
 </body>
 </html>

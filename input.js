@@ -3,6 +3,7 @@ import { updateWorldPosition } from './world.js';
 import { getDirection, getAngle } from './joystick.js';
 import { getDeltaTime } from "./game.js";
 import { getSettings } from './settings.js';
+import { now } from './utils.js';
 
 // Gestion des touches enfoncées
 let keysPressed = {};
@@ -14,11 +15,11 @@ export function updateMovement() {
     let multiplicator = 1;
     if (getGhostStatus()){
         multiplicator = getSettings().entities.ghost.speedMultiplier;
-        if (player.speedUntil > Date.now()){
+        if (player.speedUntil > now()){
             multiplicator = getSettings().entities.star.speedMultiplierGhost;
         }
     }
-    else if (player.InvincibleUntil > Date.now()){
+    else if (player.InvincibleUntil > now()){
         multiplicator = getSettings().entities.star.speedMultiplier;
     }
     
