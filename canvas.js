@@ -53,13 +53,13 @@ export function drawTimer() {
     // Définir les dimensions et la position du rectangle score en haut à droite
     const padding = 10;
     const rectX = canvas.width - scoreTextWidth - 40 - padding * 2 - 35;
-    const rectY = 0;
+    const rectY = -4;
     const rectWidth = scoreTextWidth + padding * 2;
     const rectHeight = 35;
 
     // Definir les dimensions et la position du rectangle timer, en haut à gauche 
     const rectX2 = 20;
-    const rectY2 = 0;
+    const rectY2 = -4;
     const rectWidth2 = timerTextWidth + padding * 2;
 
     // Dessiner le rectangle de fond

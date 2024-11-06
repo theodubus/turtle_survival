@@ -8,15 +8,25 @@ import { generateNormalRandom, now } from "./utils.js";
 import { drawProjecteur, addProjecteur, getProjecteurs, drawProjecteurBase, projectorDamage, updateProjecteurs } from "./projecteur.js";
 import { getSettings } from './settings.js';
 import { checkQuit, pauseGame, checkPause, drawPause } from './pause.js';
+import { drawMenu, drawTransition } from './menu.js';
 
 export let elapsedTime = 0;       // Temps écoulé en secondes
 export let timerTime = 0;         // Temps écoulé en secondes
 export let delta = 0;             // Temps écoulé en secondes
-export let startTime = Date.now();      // Pour stocker l'heure du début
+export let startTime;      // Pour stocker l'heure du début
 export let gameRunning = false;   // Indique si le jeu est en cours
 export let difficultyIncreaseRate = getSettings().difficultyIncreaseRate;  // Taux d'augmentation de la difficulté
 export let initialDifficulty = getSettings().initialDifficulty;  // Difficulté initiale
 let nextProjecteur = undefined;
+export let currentStage = "menu";
+
+export function changeStage(stage) {
+    currentStage = stage;
+}
+
+export function getStage() {
+    return currentStage;
+}
 
 export function addDeltaTimeDifficulty(t) {
     startTime += t;
@@ -140,15 +150,62 @@ function gameLoop() {
     //     requestAnimationFrame(gameLoop);
     // }, 20);
 
-    requestAnimationFrame(gameLoop);  // Boucle continue
+    if (getStage() == "game"){
+        requestAnimationFrame(gameLoop);
+    }
+    else {
+        location.reload();
+    }
 }
 
-// Écouteurs d'événements pour les touches du clavier
-window.addEventListener('keydown', keyDownHandler);
-window.addEventListener('keyup', keyUpHandler);
+function menuLoop() {
+    clearCanvas();
+    drawMenu();
+    if (getStage() == "menu"){
+        requestAnimationFrame(menuLoop);
+    }
+    else if (getStage() == "transition"){
+        requestAnimationFrame(transitionLoop);
+    }
+    else if (getStage() == "game"){
+        launchGame();
+    }
+    else {
+        location.reload();
+    }
+}
 
-window.addEventListener('resize', resizeCanvas);
+let frame;
+function transitionLoop() {
+    if (!frame){
+        frame = 0;
+    }
+    
+    clearCanvas();
+    drawTransition(frame);
+    frame++;
+    if (getStage() == "transition"){
+        setTimeout(() => {requestAnimationFrame(transitionLoop)}, 60);
+        // requestAnimationFrame(transitionLoop);
+    }
+    else if (getStage() == "game"){
+        launchGame();
+    }
+    else {
+        location.reload();
+    }
 
-waveEnemy();
+}
 
-gameLoop();
+function launchGame() {
+    window.addEventListener('keydown', keyDownHandler);
+    window.addEventListener('keyup', keyUpHandler);
+    window.addEventListener('resize', resizeCanvas);
+    startTime = Date.now();
+    waveEnemy();
+    gameLoop();
+}
+
+menuLoop();
+
+// launchGame();

@@ -110,6 +110,15 @@ export function drawWorld() {
                 scaledWidth,
                 scaledHeight
             );
+
+            // rajouter un rectangle noir pour assombrir l'image
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(
+                xOffset + i * scaledWidth,
+                yOffset + j * scaledHeight,
+                scaledWidth,
+                scaledHeight
+            );
         }
     }
 

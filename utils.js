@@ -124,3 +124,26 @@ export function findTangencyPoints(x_ori, y_ori, x, y, r_x, r_y) {
 
     return points;
 }
+
+export function drawRoundedRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+}
+
+export function isInsideRect(x, y, rect) {
+    return (
+        x >= rect.x &&
+        x <= rect.x + rect.width &&
+        y >= rect.y &&
+        y <= rect.y + rect.height
+    );
+}

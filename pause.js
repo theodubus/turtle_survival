@@ -1,8 +1,9 @@
 import { ctx, canvas, getHeight, getWidth } from "./canvas.js";
-import { addDeltaTimeDifficulty } from "./game.js";
+import { addDeltaTimeDifficulty, getStage } from "./game.js";
 import { getSettings } from "./settings.js";
+import { drawRoundedRect, isInsideRect } from "./utils.js";
 
-let lastCheck = Date.now();
+let lastCheck;
 let tolerance = 2000;
 let paused = false;
 let timePause = 0;
@@ -34,6 +35,9 @@ let pauseRect = {
 
 
 export function checkQuit(){
+    if (!lastCheck){
+        lastCheck = Date.now();
+    }
     
     let delta = Date.now() - lastCheck;
 
@@ -92,30 +96,26 @@ export function drawPause() {
     ctx.textAlign = "center";
     ctx.fillText("Game paused", getWidth() / 2, (1 * getHeight()) / 3);
 
-    // Bouton Menu
-    ctx.font = "25px Arial";
+
     ctx.fillStyle = menuRect.isHovered ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0.5)";
-    ctx.fillRect(menuRect.x, menuRect.y, menuRect.width, menuRect.height);
+    drawRoundedRect(ctx, menuRect.x, menuRect.y, menuRect.width, menuRect.height, 10); // rayon de 10 pour arrondir les bords
+    ctx.fill();
+
+    ctx.font = "25px Arial";
     ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-    ctx.fillText("Menu", menuRect.x + menuRect.width / 2, menuRect.y + menuRect.height / 2 + 10);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Menu", menuRect.x + menuRect.width / 2, menuRect.y + menuRect.height / 2);
 
     // Bouton Resume
     ctx.fillStyle = resumeRect.isHovered ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0.5)";
-    ctx.fillRect(resumeRect.x, resumeRect.y, resumeRect.width, resumeRect.height);
+    drawRoundedRect(ctx, resumeRect.x, resumeRect.y, resumeRect.width, resumeRect.height, 10); // rayon de 10 pour arrondir les bords
+    ctx.fill();
+
     ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-    ctx.fillText("Resume", resumeRect.x + resumeRect.width / 2, resumeRect.y + resumeRect.height / 2 + 10);
+    ctx.fillText("Resume", resumeRect.x + resumeRect.width / 2, resumeRect.y + resumeRect.height / 2);
 }
 
-
-
-function isInsideRect(x, y, rect) {
-    return (
-        x >= rect.x &&
-        x <= rect.x + rect.width &&
-        y >= rect.y &&
-        y <= rect.y + rect.height
-    );
-}
 
 canvas.addEventListener("mousemove", (event) => {
     const rectCanvas = canvas.getBoundingClientRect();
@@ -128,15 +128,15 @@ canvas.addEventListener("mousemove", (event) => {
     const hoverStatePause = isInsideRect(x, y, pauseRect);
 
     // Met à jour l'état `isHovered` et redessine si l'état change
-    if (hoverStateResume !== resumeRect.isHovered && paused) {
+    if (hoverStateResume !== resumeRect.isHovered && paused && getStage()=="game") {
         resumeRect.isHovered = hoverStateResume;
     }
 
-    if (hoverStateMenu !== menuRect.isHovered && paused) {
+    if (hoverStateMenu !== menuRect.isHovered && paused && getStage()=="game") {
         menuRect.isHovered = hoverStateMenu;
     }
 
-    if (hoverStatePause !== pauseRect.isHovered) {
+    if (hoverStatePause !== pauseRect.isHovered && getStage()=="game") {
         if (!paused || !hoverStatePause){
             pauseRect.isHovered = hoverStatePause;
         }
@@ -148,15 +148,15 @@ canvas.addEventListener("click", (event) => {
     const x = event.clientX - rectCanvas.left;
     const y = event.clientY - rectCanvas.top;
 
-    if (isInsideRect(x, y, resumeRect) && paused) {
+    if (isInsideRect(x, y, resumeRect) && paused && getStage()=="game") {
         unpauseGame();
     }
 
-    if (isInsideRect(x, y, menuRect) && paused) {
-        console.log("Menu");
+    if (isInsideRect(x, y, menuRect) && paused && getStage()=="game") {
+        location.reload();
     }
 
-    if (isInsideRect(x, y, pauseRect) && !paused) {
+    if (isInsideRect(x, y, pauseRect) && !paused && getStage()=="game") {
         pauseGame();
     }
 });
