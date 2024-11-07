@@ -188,14 +188,20 @@ function transitionLoop() {
     
     clearCanvas();
     drawTransition(frame);
+    console.log(frame);
     frame++;
     if (getStage() == "transition"){
-        setTimeout(() => {requestAnimationFrame(transitionLoop)}, 75);
-        // requestAnimationFrame(transitionLoop);
+        if (frame >= 4){
+            setTimeout(() => {requestAnimationFrame(transitionLoop)}, 75);
+        }
+        else {
+            setTimeout(() => {requestAnimationFrame(transitionLoop)}, 75);
+        }
+
     }
     else if (getStage() == "game"){
         frame = undefined;
-        launchGame();
+        launchGame(75);
     }
     else {
         location.reload();
@@ -230,15 +236,13 @@ function deathTransitionLoop() {
 }
 
 
-function launchGame() {
+function launchGame(waitTime) {
     window.addEventListener('keydown', keyDownHandler);
     window.addEventListener('keyup', keyUpHandler);
     window.addEventListener('resize', resizeCanvas);
     startTime = Date.now();
     waveEnemy();
-    gameLoop();
+    setTimeout(() => {requestAnimationFrame(gameLoop)}, waitTime);
 }
 
 menuLoop();
-
-// launchGame();
