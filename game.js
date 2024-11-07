@@ -182,15 +182,15 @@ function menuLoop() {
 
 let frame;
 function transitionLoop() {
-    if (!frame){
-        frame = 0;
+    if (typeof frame === "undefined"){
+        frame = -1;
     }
     
     clearCanvas();
     drawTransition(frame);
     frame++;
     if (getStage() == "transition"){
-        setTimeout(() => {requestAnimationFrame(transitionLoop)}, 60);
+        setTimeout(() => {requestAnimationFrame(transitionLoop)}, 75);
         // requestAnimationFrame(transitionLoop);
     }
     else if (getStage() == "game"){
