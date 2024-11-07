@@ -1,4 +1,4 @@
-import { activateGhost, drawHealthBar, drawInvincibilityBar, drawGhostBar, drawPlayer, updatePlayer, getScore, getGhostStatus, player } from './player.js';
+import { activateGhost, drawHealthBar, drawInvincibilityBar, drawGhostBar, drawPlayer, updatePlayer, getScore, getGhostStatus, player, deathTransition, drawEndInfo } from './player.js';
 import { drawWorld, createRadialGradient, world } from './world.js';
 import { getWaveEnemy, drawEnemy, updateEnemies, spawnFood, spawnStar, spawnGhost, drawArrows, getEntities, waveEnemy } from './elements.js';
 import { updateMovement, keyDownHandler, keyUpHandler, updateDirection, updateStatic } from './input.js';
@@ -41,12 +41,15 @@ export function gameDifficulty() {
     return 1 / (1 + Math.exp(-difficultyIncreaseRate * timerTime + b));
 }
 
-export function restartGame() {    
-    // Affiche une alerte système avec le temps écoulé
-    alert(`Vous avez fait ${getScore()} points`);
-    
-    // recharge la page
-    location.reload();
+export function endScreenLoop() {    
+    clearCanvas();
+    drawWorld();
+    drawAllEntities(false);
+    deathTransition(1000);
+    createRadialGradient();
+    drawTimer();
+    drawEndInfo();
+    requestAnimationFrame(endScreenLoop);
 }
 
 let lastFrameTime = now();
@@ -55,7 +58,7 @@ export function getDeltaTime() {
     return deltaTime;
 }
 
-function drawAllEntities(){
+function drawAllEntities(draw_player = true){
     let projecteurs = getProjecteurs();
     let entities = getEntities();
 
@@ -68,7 +71,9 @@ function drawAllEntities(){
     for (let i = 0; i < entities.length; i++) {
         allElements.push(["entite", entities[i], entities[i].y - world.y]);
     }
-    allElements.push(["player", false, player.y]);
+    if (draw_player){
+        allElements.push(["player", false, player.y]);
+    }
 
     allElements.sort(function(a, b) {
         return a[2] - b[2];
@@ -153,6 +158,9 @@ function gameLoop() {
     if (getStage() == "game"){
         requestAnimationFrame(gameLoop);
     }
+    else if (getStage() == "death"){
+        requestAnimationFrame(deathTransitionLoop);
+    }
     else {
         location.reload();
     }
@@ -166,9 +174,6 @@ function menuLoop() {
     }
     else if (getStage() == "transition"){
         requestAnimationFrame(transitionLoop);
-    }
-    else if (getStage() == "game"){
-        launchGame();
     }
     else {
         location.reload();
@@ -189,6 +194,7 @@ function transitionLoop() {
         // requestAnimationFrame(transitionLoop);
     }
     else if (getStage() == "game"){
+        frame = undefined;
         launchGame();
     }
     else {
@@ -196,6 +202,33 @@ function transitionLoop() {
     }
 
 }
+
+function deathTransitionLoop() {
+    if (typeof frame === "undefined"){
+        frame = -10;
+    }
+    
+    clearCanvas();
+    drawWorld();
+    drawAllEntities(false);
+    deathTransition(frame);
+    createRadialGradient();
+    drawTimer();
+    frame++;
+    if (getStage() == "death"){
+        setTimeout(() => {requestAnimationFrame(deathTransitionLoop)}, 50);
+        // requestAnimationFrame(deathTransitionLoop);
+    }
+    else if (getStage() == "end"){
+        frame = undefined;
+        requestAnimationFrame(endScreenLoop);
+    }
+    else {
+        location.reload();
+    }
+
+}
+
 
 function launchGame() {
     window.addEventListener('keydown', keyDownHandler);

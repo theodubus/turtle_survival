@@ -2,7 +2,7 @@ import { generateNormalRandom, getNormalRandom, getRandomPointInCircle, getScale
 import { ctx, getHeight, getWidth } from './canvas.js';
 import { player, eat, invinciblePlayer, drawHealthBar, getGhostStatus, activateGhost, deactivateGhost } from './player.js';
 import { world } from './world.js';
-import { restartGame, gameDifficulty, getDeltaTime } from './game.js';
+import { gameDifficulty, getDeltaTime, changeStage } from './game.js';
 import { getSettings } from './settings.js';
 import { checkPause } from './pause.js';
 
@@ -652,8 +652,7 @@ export function updateEnemies() {
             }
 
             if (player.hp <= 0) {
-                drawHealthBar();
-                restartGame();  // Redémarre le jeu si collision
+                changeStage("death");
                 return false;  // Supprime l'ennemi et arrête le jeu
             }
         }

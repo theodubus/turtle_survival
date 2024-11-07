@@ -1,5 +1,6 @@
 import { ctx, getHeight, getWidth } from './canvas.js';
 import { updateEnemiesPosition } from './elements.js';
+import { getStage } from './game.js';
 import { getGhostStatus } from './player.js';
 import { updateTargets } from "./projecteur.js";
 
@@ -45,9 +46,10 @@ export function changeBackgroundImage(newImage) {
 // }
 
 export function createRadialGradient() {
-    if (!getGhostStatus()){
+    if (!getGhostStatus() && !(getStage() == "death") && !(getStage() == "end")){
         return;
     }
+
 
     // Coordonnées du centre du canvas
     const centerX = getWidth() / 2;

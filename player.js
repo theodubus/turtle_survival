@@ -1,6 +1,6 @@
 import { ctx, canvas, getHeight, getWidth } from "./canvas.js";
-import { isPhone, getScale, now } from './utils.js';
-import { timerTime, gameDifficulty, addGhostTime } from './game.js';
+import { isPhone, getScale, now, drawRoundedRect, isInsideRect } from './utils.js';
+import { timerTime, gameDifficulty, addGhostTime, changeStage, getStage } from './game.js';
 import { changeBackgroundImage } from "./world.js";
 import { emptyProjecteurs } from "./projecteur.js";
 import { filterEnemies, resetStar, resetGhost, deleteTimeouts, resetLastWave } from "./elements.js";
@@ -282,3 +282,110 @@ export function deactivateGhost(){
 export function getGhostStatus(){
     return player.isGhost;
 }
+
+const deathImages = [];
+const numDeathImages = 20;
+
+for (let i = 0; i < numDeathImages; i++) {
+    deathImages.push(new Image());
+    deathImages[i].src = `./assets/player_death/${i + 1}.png`;
+}
+
+export function deathTransition(frame){
+    console.log(frame);
+    if (frame > numDeathImages - 1) {
+        frame = numDeathImages - 1;
+    }
+
+    let image;
+    let scale = player.radius*2;
+    let width = scale;
+    const height = scale;
+    if (frame < 0){
+        image = playerImages['b'][0];
+    }
+    else{
+        image = deathImages[frame];
+        width *= 1.3;
+    }
+
+    ctx.drawImage(
+        image, // Image à dessiner
+        player.x - width / 2, // Centrer l'image horizontalement
+        player.y - height / 2, // Centrer l'image verticalement
+        width, // Largeur
+        height // Hauteur
+    );
+
+    if (frame == numDeathImages - 1) {
+        changeStage("end");
+    }
+
+}
+
+let reloadRect = {
+    x: getWidth() / 8 - 5,
+    y: 7*getHeight()/10,
+    width: getWidth() - getWidth() / 4,
+    height: 70,
+    isHovered: false
+}
+
+export function drawEndInfo(){
+    let maxWidth = getWidth() * 0.9; // largeur maximum autorisée (90% de la largeur de l'écran)
+    let fontSize = 50; // taille de police de départ
+    ctx.font = `${fontSize}px customFont`;
+    // ctx.fillStyle = "rgb(40, 61, 222)";
+    ctx.fillStyle = "rgb(245, 245, 220)";
+    ctx.textAlign = "center";
+    let text = `Score : ${getScore()}`
+
+    // Réduire la taille de police tant que le texte dépasse la largeur maximale
+    while (ctx.measureText(text).width > maxWidth) {
+        fontSize -= 1;
+        ctx.font = `${fontSize}px customFont`;
+    }
+
+    ctx.fillText(text, getWidth() / 2, getHeight() / 4);
+
+    ctx.fillStyle = reloadRect.isHovered ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 255, 255, 0.7)";
+    drawRoundedRect(ctx, reloadRect.x, reloadRect.y, reloadRect.width, reloadRect.height, 10); // rayon de 10 pour arrondir les bords
+    ctx.fill();
+
+    fontSize = 25;
+    ctx.font = "25px customFont";
+    maxWidth = reloadRect.width * 0.9;
+    while (ctx.measureText("Reload").width > maxWidth) {
+        fontSize -= 1;
+        ctx.font = `${fontSize}px customFont`;
+    }
+    ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Reload", reloadRect.x + reloadRect.width / 2, reloadRect.y + reloadRect.height / 2);
+}
+
+
+canvas.addEventListener("mousemove", (event) => {
+    const rectCanvas = canvas.getBoundingClientRect();
+    const x = event.clientX - rectCanvas.left;
+    const y = event.clientY - rectCanvas.top;
+
+    // Vérifie si la souris est dans le rectangle
+    const hoverStateReload = isInsideRect(x, y, reloadRect);
+
+    // Met à jour l'état `isHovered` et redessine si l'état change
+    if (hoverStateReload !== reloadRect.isHovered && getStage()=="end") {
+        reloadRect.isHovered = hoverStateReload;
+    }
+});
+
+canvas.addEventListener("click", (event) => {
+    const rectCanvas = canvas.getBoundingClientRect();
+    const x = event.clientX - rectCanvas.left;
+    const y = event.clientY - rectCanvas.top;
+
+    if (isInsideRect(x, y, reloadRect) && getStage()=="end") {
+        location.reload();
+    }
+});
